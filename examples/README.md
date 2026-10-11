@@ -43,7 +43,8 @@ python3 examples/python/01_school_search.py "Gymnasium"
 python3 examples/python/02_public_jsonrpc.py
 
 # anonymous intern login (schools with a public timetable)
-UNTIS_ELEMENT_ID=123 python3 examples/python/03_intern_login_totp.py
+UNTIS_ANONYMOUS=1 python3 examples/python/03_intern_login_totp.py
+UNTIS_ANONYMOUS=1 UNTIS_ELEMENT_ID=123 python3 examples/python/03_intern_login_totp.py
 
 # password -> JWT, then use it
 export UNTIS_JWT="$(python3 examples/python/04_mobile_jwt.py | sed -n 's/^# jwt: //p' | tr -d '.')"

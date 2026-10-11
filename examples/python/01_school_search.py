@@ -15,7 +15,7 @@ from lib import Session, jsonrpc, pretty
 
 HOSTS = [
     "https://schoolsearch.webuntis.com/schoolquery2",
-    "https://mobile.webuntis.com/ms/schoolquery2/?v=a4.2.10",
+    "https://mobile.webuntis.com/ms/schoolquery2",
 ]
 
 

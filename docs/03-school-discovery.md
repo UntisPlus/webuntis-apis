@@ -12,7 +12,7 @@ All variants are a JSON-RPC `searchSchool` call against a central host:
 | Host | Path | Notes |
 |---|---|---|
 | `schoolsearch.webuntis.com` | `/schoolquery2` | Used by BetterUntis and the Ruby `webuntis-api` gem |
-| `mobile.webuntis.com` | `/ms/schoolquery2/?v=a4.2.10` | Observed in the Untis Mobile APK |
+| `mobile.webuntis.com` | `/ms/schoolquery2` | Used by the Untis Mobile app (a `?v=` suffix is rejected) |
 | `school.webuntis.com` | `/WebUntis/jsonrpc.do` | Historical |
 
 Request:
