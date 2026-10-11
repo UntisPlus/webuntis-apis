@@ -33,3 +33,7 @@ Keep a Changelog (keepachangelog.com).
   current versions, rate limits and the deleted-periods endpoint.
 - Complete OpenAPI specs for all 15 Untis Platform APIs under
   `specs/untis-platform/` (full request/response schemas, enums and errors).
+- Documentation of the **UntisPlus-Proxy** gateway surface under `docs/proxy/`:
+  overview, permissions, endpoints, change detection, notifications, calendar,
+  homework & absences, student events, the admin API, configuration and the
+  `untisctl` operator CLI.

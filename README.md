@@ -63,6 +63,7 @@ learn or use these APIs:
 | [10 – Untis Platform API](docs/10-platform-api.md) | 🟢 `api.webuntis.com`, OAuth2, resource APIs |
 | [11 – Formats & conventions](docs/11-conventions.md) | Dates, times, element types, error codes |
 | [12 – Credits](docs/12-reference-clients.md) | Prior art, specs used, and how to get credentials |
+| [Proxy — Overview](docs/proxy/README.md) | 🔴 The extra surfaces added by the **UntisPlus-Proxy** gateway (permissions, change detection, notifications, calendar, admin, CLI) |
 
 ## OpenAPI specs
 
@@ -86,6 +87,15 @@ python3 examples/python/01_school_search.py "Gymnasium"
 ```
 
 See [`examples/README.md`](examples/README.md) for the full list.
+
+## The UntisPlus-Proxy surface
+
+Beyond the raw Untis APIs, the [UntisPlus-Proxy](https://github.com/UntisPlus/UntisPlus-Proxy)
+gateway adds its own documented surface: session-based permission levels, change
+detection and SSE streaming, webhook/ntfy notifications, calendar subscriptions,
+homework flags, student events, an admin dashboard + JSON API and the `untisctl`
+operator CLI. That surface is documented under
+[`docs/proxy/`](docs/proxy/README.md).
 
 ## Legal
 

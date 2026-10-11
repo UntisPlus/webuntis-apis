@@ -20,6 +20,7 @@ siblings.
 | [10+ — Platform API mirror](platform/README.md) | 🟢 Full offline copy of the official platform docs (42 pages) |
 | [11 — Formats & conventions](11-conventions.md) | Dates, times, element types, error codes |
 | [12 — Credits](12-reference-clients.md) | Prior art, specs used, getting credentials |
+| [Proxy — Overview](proxy/README.md) | 🔴 Extra surfaces added by the UntisPlus-Proxy gateway (10 pages) |
 
 > **Official platform docs:** the complete Untis developer documentation is
 > mirrored locally under [`platform/`](platform/README.md) — API reference for
