@@ -1,0 +1,129 @@
+openapi: "3.0.1"
+info:
+  title: API for sending and reading messages as platform user
+  description: "WebUntis external messages API"
+  version: "1.0.0"
+  contact:
+    name: Untis GmbH
+    url: "https://www.untis.at"
+    email: support@untis.at
+paths:
+  /api/rest/extern/v1/messages:
+    post:
+      summary: Send a new message with customized recipients via user id.
+      operationId: sendMessage
+      tags:
+        - messagesExtern
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                request:
+                  $ref: "#/components/schemas/ExternalMessageSendRequestDto"
+                attachments:
+                  type: array
+                  description: The attachments the user wants to add to the new message.
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - request
+      responses:
+        200:
+          description: The message has been sent successfully.
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/ExternalMessageSendResponseDto"
+        "400":
+          description: Client error - bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "422":
+          description: Unprocessable Content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExternalMessageSendResponseDto"
+        "500":
+          description: Server error
+components:
+  schemas:
+    ExternalMessageSendRequestDto:
+      description: The DTO containing the necessary information for sending a message.
+      type: object
+      required:
+        - subject
+        - recipientUserUuids
+      properties:
+        subject:
+          description: The subject of the new message in plain-text.
+          example: A very important message
+          type: string
+          minLength: 1
+          maxLength: 255
+        content:
+          description: The content of the new message in plain-text.
+          example: A very important message with some more information
+          type: string
+        recipientUserUuids:
+          description: External UUIDs of the recipients (subs).
+          example:
+            [
+              "5c1732e9-6671-419a-bc95-aaaaaaaaaaaa",
+              "5c1732e9-6671-419a-bc95-bbbbbbbbbbbb",
+              "5c1732e9-6671-419a-bc95-cccccccccccc",
+            ]
+          uniqueItems: true
+          items:
+            type: string
+            format: uuid
+          type: array
+        requestConfirmation:
+          description: Indicates that a sender expects the message to be confirmed by each recipient.
+          type: boolean
+          default: false
+        forbidReply:
+          description: Indicates whether recipients should be able to reply to the message or not.
+          type: boolean
+          default: false
+    ExternalMessageSendResponseDto:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            numberOfRecipients:
+              description: Total number of recipients for the message
+              example: 5
+              format: int32
+              type: integer
+          required:
+            - numberOfRecipients
+        error:
+          $ref: "#/components/schemas/ErrorResponseDto"
+    ErrorResponseDto:
+      description: A dto containing an error message and details.
+      type: object
+      properties:
+        message:
+          description: A high-level error message summarizing the issue.
+          example: "Validation Failed"
+          type: string
+        details:
+          description: An array of detailed error messages explaining specific issues.
+          example:
+            [
+              "Last name should be between 3 and 20 characters",
+              "Email is required",
+            ]
+          type: array
+          items:
+            type: string
+      required:
+        - message,
+        - details

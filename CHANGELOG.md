@@ -31,3 +31,5 @@ Keep a Changelog (keepachangelog.com).
   `docs/platform/` (42 pages: authentication, every Platform resource API,
   OneRoster, webhooks and integration guides), plus a Platform API summary with
   current versions, rate limits and the deleted-periods endpoint.
+- Complete OpenAPI specs for all 15 Untis Platform APIs under
+  `specs/untis-platform/` (full request/response schemas, enums and errors).

@@ -1,0 +1,563 @@
+openapi: 3.0.2
+info:
+  title: Extern - API Documentation for legal guardian management
+  description: |
+    WebUntis API for extern usage of platform applications to manage legal guardian master data incl. student assignments and userdata.
+    (Currently WebUntis openapi-specification does not support client code generation).
+
+    IMPORTANT:
+
+    For legal guardians the following fields need to be unique and one of the two needs to be present for create/update:
+      - nationalId
+      - externKey
+    For Users the following fields need to be unique:
+      - name
+      - externKey
+  version: 1.0.0
+  contact:
+    name: Untis GmbH
+    url: https://www.untis.at
+    email: support@untis.at
+paths:
+  /api/rest/extern/v1/legal-guardians:
+    get:
+      summary: get a list of legal guardians
+      operationId: getLegalGuardians
+      tags:
+        - legal-guardian
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Sorting"
+        - $ref: "#/components/parameters/Filtering"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LegalGuardiansResponse"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+    post:
+      summary: Import a list of legal guardians
+      operationId: createLegalGuardians
+      tags:
+        - legal-guardian
+      responses:
+        "200":
+          description: OK - If all sent legal guardians are imported successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LegalGuardiansResponse"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+      requestBody:
+        description: Contains a list of legal guardians that will be imported
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostLegalGuardiansRequest"
+    put:
+      summary: Update a list of legal guardians
+      operationId: updateLegalGuardians
+      description: |
+        The following fields can be used to identify a legal guardian (ordered hierarchically) - id, externKey, nationalId
+        The following fields can be used to identify a legal guardian user (ordered hierarchically) - user.externUuid, user.externKey, user.name
+      tags:
+        - legal-guardian
+      responses:
+        "200":
+          description: OK - If all sent legal guardians are updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LegalGuardiansResponse"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+      requestBody:
+        description: Contains a list of legal guardians that will be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutLegalGuardiansRequest"
+  /api/rest/extern/v1/legal-guardians/{legalGuardianId}:
+    get:
+      summary: get a legal guardian
+      operationId: getLegalGuardianById
+      tags:
+        - legal-guardian
+      parameters:
+        - in: path
+          name: legalGuardianId
+          required: true
+          description: The externKey of the legal guardian
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetExternLegalGuardianDto"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+components:
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: Page - contains values for limit and offset.
+      required: true
+      schema:
+        type: object
+        properties:
+          limit:
+            type: integer
+            format: int32
+            default: 100
+          offset:
+            type: integer
+            format: int32
+    Sorting:
+      name: sorting
+      in: query
+      description: Sorting - contains values for sort and orderby.
+      required: true
+      schema:
+        type: object
+        properties:
+          sort:
+            type: string
+            default: id
+          orderBy:
+            $ref: "#/components/schemas/SortingOrder"
+            default: ASC
+    Filtering:
+      name: filter
+      in: query
+      description: Filter - the filter query e.g. <data field><predicate><value>.
+      required: false
+      schema:
+        type: string
+  schemas:
+    SortingOrder:
+      enum:
+        - ASC
+        - DESC
+    _Details:
+      type: object
+      properties:
+        externKey:
+          type: string
+          pattern: ^[^<>|\[\]]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the legal guardian, it needs to be unique
+        nationalId:
+          type: string
+          pattern: ^[A-Za-z0-9\-+\/=_:]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier specific by country/state, needs to be unique
+        forename:
+          type: string
+          minLength: 1
+          maxLength: 64
+          pattern: ^[^<>|\[\]{}]+$
+          description: Legal guardian's first name
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: ^[^<>|\[\]{}]+$
+          description: Legal guardian's family name
+        shortName:
+          type: string
+          minLength: 1
+          maxLength: 60
+          pattern: ^[^<>|\[\]{}]+$
+          description: Legal guardian's short name. (e.g. combination of first and family name) needs to be unique
+        degree:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Legal guardian's degree
+        grade:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Legal guardian's grade
+        postgrade:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Legal guardian's postgrade
+    ExternUser:
+      x-no-field-selection: true
+      required:
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+        dateLastModified:
+          type: string
+          format: date-time
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+          pattern: ^[^<>|\[\]{}]*$
+          description: Username; needs to be unique
+        externKey:
+          type: string
+          minLength: 0
+          maxLength: 100
+          pattern: ^[^<>|\[\]]*$
+          description: External identifier of the user; needs to be unique
+        languageCode:
+          type: string
+          description: Language code for that user (https://de.wikipedia.org/wiki/ISO_639)
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: Email of the user
+        office365Id:
+          type: string
+          description: Identifier for office365
+        enabled:
+          type: boolean
+          default: true
+          description: User is enabled or not
+        externUuid:
+          type: string
+          readOnly: true
+          description: External identifier for OneRoster
+    PersonAddress:
+      properties:
+        street:
+          type: string
+          maxLength: 100
+          description: Street
+        city:
+          type: string
+          maxLength: 100
+          description: City
+        postCode:
+          type: string
+          maxLength: 20
+          description: Post code
+        country:
+          type: string
+          x-extra-annotation:
+            - "@com.untis.api.validator.annotations.ValidIsoCountryCode"
+          description: Country code (https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: Email address
+        phone:
+          type: string
+          maxLength: 50
+          pattern: "[0-9 +/-]+|^$"
+          description: Phone number
+        mobile:
+          type: string
+          maxLength: 50
+          pattern: "[0-9 +/-]+|^$"
+          description: Mobile phone number
+        fax:
+          type: string
+          maxLength: 50
+          pattern: "[0-9 +/-]+|^$"
+          description: Fax number
+    SimpleStudent:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: false
+        externKey:
+          type: string
+          pattern: ^[^<>|\[\]]*$
+          maxLength: 100
+          description: External identifier of the entity.
+        shortName:
+          type: string
+          minLength: 1
+          maxLength: 64
+          pattern: ^[^<>|\[\]{}]+$
+        nationalId:
+          type: string
+          pattern: ^[A-Za-z0-9\-+\/=_:]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier specific by country/state, needs to be unique
+        longName:
+          type: string
+          pattern: ^[^<>|\[\]{}]+$
+          minLength: 1
+          maxLength: 100
+          description: last name
+    _Refs:
+      type: object
+      properties:
+        user:
+          nullable: false
+          $ref: "#/components/schemas/ExternUser"
+        address:
+          nullable: false
+          $ref: "#/components/schemas/PersonAddress"
+        students:
+          type: array
+          items:
+            $ref: "#/components/schemas/SimpleStudent"
+    GetExternLegalGuardianDto:
+      type: object
+      required:
+        - id
+        - shortName
+      allOf:
+        - $ref: "#/components/schemas/_Details"
+        - $ref: "#/components/schemas/_Refs"
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+          minLength: 1
+        dateLastModified:
+          type: string
+          format: date-time
+    LegalGuardiansResponse:
+      type: object
+      x-no-field-selection: true
+      required:
+        - legalGuardians
+      properties:
+        legalGuardians:
+          type: array
+          items:
+            $ref: "#/components/schemas/GetExternLegalGuardianDto"
+    ErrorCode:
+      type: string
+      enum:
+        - INTERNAL_ERROR
+        - MASTER_DATA_NOT_FOUND
+        - VALIDATION_ERROR
+        - ENTITY_EXPIRED
+        - MESSAGING_GROUP_CALCULATION_ERROR
+        - MESSAGING_READ_CONFIRMATION_ALREADY_CONFIRMED
+        - NOT_FOUND
+        - FORBIDDEN
+        - TT_ONGOING_TIMETABLE_PUBLICATION
+        - TT_UNRESOLVED_CHANGESET
+        - TENANT_INSTALLATION_RECOVERABLE_ERROR
+        - BAD_REQUEST
+        - PW_CHANGE_RULE_VIOLATION
+    ErrorData:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        externKey:
+          type: string
+    ValidationError:
+      type: object
+      required:
+        - path
+        - errorMessage
+      properties:
+        errorKey:
+          type: string
+          enum:
+            - field.mustBeMin
+            - field.mustBeMax
+            - field.mustBeNull
+            - field.mustNotBeNull
+            - field.mustNotBeEmpty
+            - field.mustNotBeBlank
+            - field.sizeInvalid
+            - field.digitsMustMatch
+            - field.mustBeEmail
+            - field.mustBeFuture
+            - field.mustBeFutureOrPresent
+            - field.mustBePast
+            - field.mustBePastOrPresent
+            - field.mustBePositive
+            - field.mustBePositiveOrZero
+            - field.mustBeNegative
+            - field.mustBeNegativeOrZero
+            - field.mustMatchPattern
+            - value.mustHaveIdentity
+            - value.mustBeBefore
+            - value.mustBeAfter
+            - value.alreadyExists
+            - value.mustBeUnique
+            - value.other
+            - value.mustBeIsoCountryCode
+            - entity.notFound
+            - entity.duplicateFound
+            - entity.other
+        path:
+          type: string
+        constraintValue:
+          type: string
+        errorMessage:
+          type: string
+        index:
+          type: integer
+          description: Index of the dto which failed validation in a bulk operation. Count starts from 0.
+        errorData:
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorData"
+    ValidationErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - requestId
+        - traceId
+        - validationErrors
+      properties:
+        errorCode:
+          $ref: "#/components/schemas/ErrorCode"
+        requestId:
+          type: string
+        traceId:
+          type: string
+        validationErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
+    ErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+        - requestId
+        - traceId
+      properties:
+        errorCode:
+          $ref: "#/components/schemas/ErrorCode"
+        errorMessage:
+          type: string
+        requestId:
+          type: string
+        traceId:
+          type: string
+    PutExternLegalGuardianDto:
+      type: object
+      required:
+        - lastName
+        - students
+      allOf:
+        - $ref: "#/components/schemas/_Details"
+        - $ref: "#/components/schemas/_Refs"
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+          minLength: 1
+    PutLegalGuardiansRequest:
+      type: object
+      x-no-field-selection: true
+      required:
+        - legalGuardians
+      properties:
+        legalGuardians:
+          type: array
+          items:
+            $ref: "#/components/schemas/PutExternLegalGuardianDto"
+          minLength: 1
+    PostExternLegalGuardianDto:
+      type: object
+      required:
+        - lastName
+        - students
+      allOf:
+        - $ref: "#/components/schemas/_Details"
+        - $ref: "#/components/schemas/_Refs"
+    PostLegalGuardiansRequest:
+      type: object
+      x-no-field-selection: true
+      required:
+        - legalGuardians
+      properties:
+        legalGuardians:
+          type: array
+          items:
+            $ref: "#/components/schemas/PostExternLegalGuardianDto"
+          minLength: 1
+  responses:
+    bad-request-v1:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+    unauthorized-v1:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    forbidden-v1:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    not-found-v1:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+    internal-error-v1:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"

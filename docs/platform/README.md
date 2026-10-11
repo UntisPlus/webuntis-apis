@@ -14,6 +14,10 @@ this repository.
 For the short orientation to these APIs, see
 [`../10-platform-api.md`](../10-platform-api.md).
 
+> **Complete schemas:** the full machine-readable OpenAPI documents for all 15
+> Platform APIs (every field, enum and status code) are vendored in
+> [`../../specs/untis-platform/`](../../specs/untis-platform/README.md).
+
 ## Getting started
 
 | Page | Contents |

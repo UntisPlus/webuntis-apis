@@ -1,0 +1,894 @@
+openapi: 3.0.2
+info:
+  title: Extern - API Documentation for teacher management
+  description: |
+    WebUntis API for extern usage of platform applications to manage teacher masterdata incl. teacher-status, 
+    teaching-qualifications, rooms, departments and userdata.
+    (Currently WebUntis openapi-specification does not support client code generation).
+
+    IMPORTANT:
+
+    For teachers the following fields need to be unique and one of them needs to be present for creation/update:
+      - id (only for update)
+      - externKey
+      - national-id
+
+    For users the following fields need to be unique:
+      - name
+      - externKey
+  version: 2.0.0
+  contact:
+    name: Untis GmbH
+    url: https://www.untis.at
+    email: support@untis.at
+paths:
+  /api/rest/extern/v2/teachers:
+    get:
+      summary: get a list of teachers
+      operationId: getTeachers
+      tags:
+        - teacher
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Sorting"
+        - $ref: "#/components/parameters/Filtering"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeacherResponse"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+    post:
+      summary: Import a list of teachers
+      operationId: createTeachers
+      tags:
+        - teacher
+      responses:
+        "200":
+          description: OK - If all sent teachers are imported successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeacherResponse"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+      requestBody:
+        description: Contains a list of teachers to import
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostTeachersRequest"
+    put:
+      summary: Update a list of teachers
+      operationId: updateTeachers
+      description: |
+        The following fields can be used to identify a teacher (ordered hierarchically) - id, externKey, nationalId
+        The following fields can be used to identify a teacher-user (ordered hierarchically) - user.externUuid, user.externKey, user.name
+        If the teacher does not have a user yet, one is created.
+      tags:
+        - teacher
+      responses:
+        "200":
+          description: OK - If all sent teachers are updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeacherResponse"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+      requestBody:
+        description: Contains a list of teachers to update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutTeachersRequest"
+  /api/rest/extern/v2/teachers/{teacherId}:
+    get:
+      summary: get a teacher
+      operationId: getTeacherById
+      tags:
+        - teacher
+      parameters:
+        - in: path
+          name: teacherId
+          required: true
+          description: The external id of the teacher to retrieve.
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetExternTeacherDto"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+components:
+  schemas:
+    Page:
+      type: object
+      properties:
+        limit:
+          type: integer
+          format: int32
+          default: 100
+        offset:
+          type: integer
+          format: int32
+    SortingOrder:
+      enum:
+        - ASC
+        - DESC
+    Sorting:
+      type: object
+      properties:
+        sort:
+          type: string
+          default: id
+        orderBy:
+          $ref: "#/components/schemas/SortingOrder"
+          default: ASC
+    Gender:
+      description: Person's gender
+      type: string
+      enum:
+        - female
+        - male
+        - inter
+    TargetHoursPerWeek:
+      type: object
+      nullable: true
+      required:
+        - hours
+      properties:
+        hours:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 168
+          nullable: false
+          description: Target hours per week of the teacher
+        from:
+          type: string
+          format: date
+          nullable: true
+        to:
+          type: string
+          format: date
+          nullable: true
+    _Details:
+      type: object
+      properties:
+        externKey:
+          type: string
+          pattern: ^[^<>|\[\]]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the teacher; needs to be unique
+          nullable: true
+        shortName:
+          type: string
+          minLength: 1
+          maxLength: 20
+          pattern: ^[^<>|\[\]{}]+$
+          description: Teacher's short name; needs to be unique
+          nullable: false
+        nationalId:
+          type: string
+          pattern: ^[A-Za-z0-9\-+\/=_:{}]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier specific by country/state; needs to be unique
+        lastName:
+          type: string
+          nullable: false
+          minLength: 1
+          maxLength: 100
+          pattern: ^[^<>|\[\]{}]+$
+          description: Teacher's last name
+        forename:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 60
+          pattern: ^[^<>|\[\]{}]+$
+          description: Teacher's forename
+        title:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 20
+          description: Teacher's title
+        personnelNumber:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 50
+          description: Teacher's personnel number
+        text:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 255
+          description: Free text for comments about the teacher
+        birthDate:
+          type: string
+          format: date
+          nullable: true
+          description: Teacher's birth date
+        gender:
+          $ref: "#/components/schemas/Gender"
+        entryDate:
+          type: string
+          nullable: true
+          format: date
+          description: The date when the teacher joined the school
+        exitDate:
+          type: string
+          nullable: true
+          format: date
+          description: The date when the teacher left the school
+        relevantForAccounting:
+          type: boolean
+          nullable: true
+          description: If this option is activated, lesson data will be transferred to the connected central remuneration system
+        otherActivitiesPercentage:
+          type: integer
+          nullable: true
+          format: int32
+          minimum: 0
+          maximum: 100
+          description: Hours spend by the teacher for other activities
+        targetHoursPerWeek:
+          type: array
+          nullable: false
+          minItems: 0
+          items:
+            $ref: "#/components/schemas/TargetHoursPerWeek"
+          description: Target hours per week for the teacher
+        active:
+          type: boolean
+          description: Marks the teacher as active or not.
+    PersonAddress:
+      properties:
+        street:
+          type: string
+          maxLength: 100
+          description: Street
+        city:
+          type: string
+          maxLength: 100
+          description: City
+        postCode:
+          type: string
+          maxLength: 20
+          description: Post code
+        country:
+          type: string
+          x-field-extra-annotation: "@com.untis.api.validator.annotations.ValidIsoCountryCode"
+          description: Country code (https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: Email address
+        phone:
+          type: string
+          maxLength: 50
+          pattern: "[0-9 +/-]+|^$"
+          description: Phone number
+        mobile:
+          type: string
+          maxLength: 50
+          pattern: "[0-9 +/-]+|^$"
+          description: Mobile phone number
+        fax:
+          type: string
+          maxLength: 50
+          pattern: "[0-9 +/-]+|^$"
+          description: Fax number
+    ReadableRoomRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          nullable: false
+          format: int64
+        externKey:
+          type: string
+          nullable: true
+          pattern: ^[^<>|\[\]]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the room
+        shortName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 20
+          pattern: ^[^<>|\[\]{}]+$
+          description: Short name of the room
+        longName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+          pattern: ^[^<>|\[\]{}]+$
+          description: Long name of the room
+    ReadableDepartmentRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          nullable: false
+          format: int64
+        externKey:
+          type: string
+          nullable: true
+          pattern: ^[^<>|\[\]]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the department
+        shortName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 30
+          pattern: ^[^<>|\[\]{}]+$
+          description: Short name of the department
+        longName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+          pattern: ^[^<>|\[\]{}]+$
+          description: Long name of the department
+    ReadableTeachingQualificationRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          nullable: false
+          format: int64
+        externKey:
+          type: string
+          nullable: true
+          pattern: ^[^<>|\[\]]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the teaching qualification
+        shortName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 20
+          pattern: ^[^<>|\[\]{}]+$
+          description: Short name of the teaching qualification
+        longName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 255
+          pattern: ^[^<>|\[\]{}]+$
+          description: Long name of the teaching qualification
+    ReadableTeacherStatusRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          nullable: false
+          format: int64
+        externKey:
+          type: string
+          nullable: true
+          pattern: ^[^<>|\[\]]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the teacher status
+        shortName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 20
+          pattern: ^[^<>|\[\]{}]+$
+          description: Short name of the teacher status
+        longName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+          pattern: ^[^<>|\[\]{}]+$
+          description: Long name of the teacher status
+        from:
+          type: string
+          format: date
+          description: Date when this status was assigned to the teacher
+        to:
+          type: string
+          format: date
+          description: Date until this status was assigned to the teacher
+    ExternUser:
+      x-no-field-selection: true
+      required:
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+        dateLastModified:
+          type: string
+          format: date-time
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+          pattern: ^[^<>|\[\]{}]*$
+          description: Username; needs to be unique
+        externKey:
+          type: string
+          minLength: 0
+          maxLength: 100
+          pattern: ^[^<>|\[\]]*$
+          description: External identifier of the user; needs to be unique
+        languageCode:
+          type: string
+          description: Language code for that user (https://de.wikipedia.org/wiki/ISO_639)
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: Email of the user
+        office365Id:
+          type: string
+          description: Identifier for office365
+        enabled:
+          type: boolean
+          default: true
+          description: User is enabled or not
+        externUuid:
+          type: string
+          readOnly: true
+          description: External identifier for OneRoster
+    _ReadableRefs:
+      type: object
+      properties:
+        address:
+          nullable: false
+          $ref: "#/components/schemas/PersonAddress"
+          description: Details of the teacher's address
+        room:
+          nullable: false
+          $ref: "#/components/schemas/ReadableRoomRef"
+          description: Details of the teacher's room
+        departments:
+          type: array
+          nullable: false
+          minItems: 0
+          items:
+            $ref: "#/components/schemas/ReadableDepartmentRef"
+          description: Departments of the teacher
+        teachingQualifications:
+          type: array
+          nullable: false
+          minItems: 0
+          items:
+            $ref: "#/components/schemas/ReadableTeachingQualificationRef"
+          description: Teaching qualifications of the teacher
+        teacherStatus:
+          type: array
+          nullable: false
+          minItems: 0
+          items:
+            $ref: "#/components/schemas/ReadableTeacherStatusRef"
+          description: Status of the teacher
+        user:
+          nullable: false
+          $ref: "#/components/schemas/ExternUser"
+          description: Details of the teacher's user
+    GetExternTeacherDto:
+      type: object
+      required:
+        - id
+        - shortName
+        - dateLastModified
+        - lastName
+      allOf:
+        - $ref: "#/components/schemas/_Details"
+        - $ref: "#/components/schemas/_ReadableRefs"
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: false
+          description: Teacher's id in WebUntis
+        dateLastModified:
+          type: string
+          format: date-time
+          nullable: false
+          description: Teacher's last modification time
+    TeacherResponse:
+      type: object
+      x-no-field-selection: true
+      required:
+        - teachers
+      properties:
+        teachers:
+          type: array
+          items:
+            $ref: "#/components/schemas/GetExternTeacherDto"
+    ErrorCode:
+      type: string
+      enum:
+        - INTERNAL_ERROR
+        - MASTER_DATA_NOT_FOUND
+        - VALIDATION_ERROR
+        - ENTITY_EXPIRED
+        - MESSAGING_GROUP_CALCULATION_ERROR
+        - MESSAGING_READ_CONFIRMATION_ALREADY_CONFIRMED
+        - NOT_FOUND
+        - FORBIDDEN
+        - TT_ONGOING_TIMETABLE_PUBLICATION
+        - TT_UNRESOLVED_CHANGESET
+        - TENANT_INSTALLATION_RECOVERABLE_ERROR
+        - BAD_REQUEST
+        - PW_CHANGE_RULE_VIOLATION
+    ErrorData:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        externKey:
+          type: string
+    ValidationError:
+      type: object
+      required:
+        - path
+        - errorMessage
+      properties:
+        errorKey:
+          type: string
+          enum:
+            - field.mustBeMin
+            - field.mustBeMax
+            - field.mustBeNull
+            - field.mustNotBeNull
+            - field.mustNotBeEmpty
+            - field.mustNotBeBlank
+            - field.sizeInvalid
+            - field.digitsMustMatch
+            - field.mustBeEmail
+            - field.mustBeFuture
+            - field.mustBeFutureOrPresent
+            - field.mustBePast
+            - field.mustBePastOrPresent
+            - field.mustBePositive
+            - field.mustBePositiveOrZero
+            - field.mustBeNegative
+            - field.mustBeNegativeOrZero
+            - field.mustMatchPattern
+            - value.mustHaveIdentity
+            - value.mustBeBefore
+            - value.mustBeAfter
+            - value.alreadyExists
+            - value.mustBeUnique
+            - value.other
+            - value.mustBeIsoCountryCode
+            - entity.notFound
+            - entity.duplicateFound
+            - entity.other
+        path:
+          type: string
+        constraintValue:
+          type: string
+        errorMessage:
+          type: string
+        index:
+          type: integer
+          description: Index of the dto which failed validation in a bulk operation. Count starts from 0.
+        errorData:
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorData"
+    ValidationErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - requestId
+        - traceId
+        - validationErrors
+      properties:
+        errorCode:
+          $ref: "#/components/schemas/ErrorCode"
+        requestId:
+          type: string
+        traceId:
+          type: string
+        validationErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
+    ErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+        - requestId
+        - traceId
+      properties:
+        errorCode:
+          $ref: "#/components/schemas/ErrorCode"
+        errorMessage:
+          type: string
+        requestId:
+          type: string
+        traceId:
+          type: string
+    AssignableRoomRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          nullable: true
+          minimum: 1
+          format: int64
+        externKey:
+          type: string
+          nullable: true
+          pattern: ^[^<>|\[\]]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the room
+        shortName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 20
+          pattern: ^[^<>|\[\]{}]+$
+          description: Short name of the room
+    AssignableDepartmentRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          nullable: true
+          minimum: 1
+          format: int64
+        externKey:
+          type: string
+          nullable: true
+          pattern: ^[^<>|\[\]]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the department
+        shortName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 30
+          pattern: ^[^<>|\[\]{}]+$
+          description: Short name of the department
+    AssignableTeachingQualificationRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          nullable: true
+          minimum: 1
+          format: int64
+        externKey:
+          type: string
+          nullable: true
+          pattern: ^[^<>|\[\]]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the teaching qualification
+        shortName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 20
+          pattern: ^[^<>|\[\]{}]+$
+          description: Short name of the teaching qualification
+    AssignableTeacherStatusRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          nullable: true
+          minimum: 1
+          format: int64
+        externKey:
+          type: string
+          nullable: true
+          pattern: ^[^<>|\[\]]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the teacher status
+        shortName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 20
+          pattern: ^[^<>|\[\]{}]+$
+          description: Short name of the teacher status
+        from:
+          type: string
+          format: date
+          description: Date when this status was assigned to the teacher
+        to:
+          type: string
+          format: date
+          description: Date until this status was assigned to the teacher
+    _AssignableRefs:
+      type: object
+      properties:
+        address:
+          nullable: false
+          $ref: "#/components/schemas/PersonAddress"
+          description: Details of the teacher's address
+        room:
+          nullable: false
+          $ref: "#/components/schemas/AssignableRoomRef"
+          description: Details of the teacher's room
+        departments:
+          type: array
+          nullable: false
+          minItems: 0
+          items:
+            $ref: "#/components/schemas/AssignableDepartmentRef"
+          description: Departments of the teacher
+        teachingQualifications:
+          type: array
+          nullable: false
+          minItems: 0
+          items:
+            $ref: "#/components/schemas/AssignableTeachingQualificationRef"
+          description: Teaching qualifications of the teacher
+        teacherStatus:
+          type: array
+          nullable: false
+          minItems: 0
+          items:
+            $ref: "#/components/schemas/AssignableTeacherStatusRef"
+          description: Status of the teacher
+        user:
+          nullable: false
+          $ref: "#/components/schemas/ExternUser"
+          description: Details of the teacher's user
+    PutExternTeacherDto:
+      type: object
+      required:
+        - shortName
+        - lastName
+      allOf:
+        - $ref: "#/components/schemas/_Details"
+        - $ref: "#/components/schemas/_AssignableRefs"
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: false
+          description: Teacher's id in WebUntis
+    PutTeachersRequest:
+      type: object
+      x-no-field-selection: true
+      required:
+        - teachers
+      properties:
+        teachers:
+          type: array
+          items:
+            $ref: "#/components/schemas/PutExternTeacherDto"
+          minLength: 1
+    PostExternTeacherDto:
+      type: object
+      required:
+        - shortName
+        - lastName
+      allOf:
+        - $ref: "#/components/schemas/_Details"
+        - $ref: "#/components/schemas/_AssignableRefs"
+    PostTeachersRequest:
+      type: object
+      x-no-field-selection: true
+      required:
+        - teachers
+      properties:
+        teachers:
+          type: array
+          items:
+            $ref: "#/components/schemas/PostExternTeacherDto"
+          minLength: 1
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: Page - contains values for limit and offset.
+      required: true
+      schema:
+        $ref: "#/components/schemas/Page"
+    Sorting:
+      name: sorting
+      in: query
+      description: Sorting - contains values for sort and orderby.
+      required: true
+      schema:
+        $ref: "#/components/schemas/Sorting"
+    Filtering:
+      name: filter
+      in: query
+      description: Filter - the filter query e.g. <data field><predicate><value>.
+      required: false
+      schema:
+        type: string
+  responses:
+    bad-request-v1:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+    unauthorized-v1:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    forbidden-v1:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    not-found-v1:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+    internal-error-v1:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"

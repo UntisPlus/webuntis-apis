@@ -1,0 +1,664 @@
+openapi: 3.0.3
+info:
+  title: Extern - API Documentation for user management
+  description: |
+    WebUntis API for extern user management
+  version: 1.0.0
+  contact:
+    name: Untis GmbH
+    url: https://www.untis.at
+    email: support@untis.at
+paths:
+  /api/rest/extern/v1/users:
+    get:
+      summary: Get a list of all users
+      operationId: getUsers
+      tags:
+        - user
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Sorting"
+        - $ref: "#/components/parameters/Filtering"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUsersResponse"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+    post:
+      summary: Import a list of users
+      operationId: createUsers
+      tags:
+        - user
+      parameters:
+        - name: sendpasswords
+          in: query
+          required: false
+          description: If this param is set to false, no message with the passwords will be sent to the admin. The param is optional and per default true.
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: OK - If all sent users are imported successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUsersResponse"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsersPostRequest"
+    put:
+      summary: Update a list of users
+      operationId: updateUsers
+      description: |
+        The following fields can be used to identify a user - externUuid
+        The following fields can be used to identify a user-person (ordered hierarchically) - person.id, person.externKey, person.shortname
+        The following fields can be used to identify a user-userGroup (ordered hierarchically) - userGroup.id, userGroup.name
+        The following fields can be used to identify a user-department (ordered hierarchically) - department.id, department.externKey, department.shortname
+      tags:
+        - user
+      responses:
+        "200":
+          description: OK - If all sent users are updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUsersResponse"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+      requestBody:
+        description: Contains a list of users that will be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsersPutRequest"
+  /api/rest/extern/v1/users/{externUuid}:
+    get:
+      summary: get a user
+      operationId: getUserByExternUuid
+      tags:
+        - user
+      parameters:
+        - in: path
+          name: externUuid
+          required: true
+          description: The extern UUID of the user to retrieve
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 36
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetExternUserDto"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+components:
+  schemas:
+    Page:
+      type: object
+      properties:
+        limit:
+          type: integer
+          format: int32
+          default: 100
+        offset:
+          type: integer
+          format: int32
+    SortingOrder:
+      enum:
+        - ASC
+        - DESC
+    Sorting:
+      type: object
+      properties:
+        sort:
+          type: string
+          default: externUuid
+        orderBy:
+          $ref: "#/components/schemas/SortingOrder"
+          default: ASC
+    Role:
+      description: Person's role. When set to `student`, `teacher`, `legal_guardian` or `apprentice_representative`, the `person` object is required.
+      type: string
+      enum:
+        - admin
+        - directorate
+        - staff
+        - student
+        - teacher
+        - legal_guardian
+        - apprentice_representative
+        - other
+    GetPerson:
+      type: object
+      description: The person (masterdata) connected to the user.
+      required:
+        - id
+        - shortname
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Internal WebUntis ID, unique.
+        externKey:
+          type: string
+          pattern: ^[^<>|\[\]]*$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the person, unique.
+        shortname:
+          type: string
+          minLength: 1
+          maxLength: 60
+          pattern: ^[^<>|\[\]{}]*$
+          description: Person short name. (e.g. combination of first and family name), unique.
+        fullname:
+          type: string
+          description: Full name of the person (without layout settings consideration)
+          minLength: 1
+          maxLength: 162
+    GetUserGroup:
+      type: object
+      description: The userGroup connected to the user.
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Internal WebUntis ID, unique.
+        name:
+          type: string
+          minLength: 1
+          maxLength: 20
+          description: UserGroup name, unique.
+    GetDepartment:
+      type: object
+      description: The department connected to the user.
+      required:
+        - id
+        - shortname
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Internal WebUntis ID, unique.
+        externKey:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the department, unique.
+        shortname:
+          type: string
+          minLength: 1
+          maxLength: 30
+          description: Unique readable identifier, unique.
+        longname:
+          type: string
+          minLength: 1
+          maxLength: 100
+    GetExternUserDto:
+      type: object
+      description: External User Data Transfer Object
+      required:
+        - externUuid
+        - name
+        - enabled
+        - accountLocked
+        - role
+        - userGroup
+        - languageCode
+      properties:
+        externUuid:
+          type: string
+          minLength: 1
+          maxLength: 36
+          description: Extern Uuid of the user, randomly generated, unique.
+        externKey:
+          type: string
+          pattern: ^[^<>|\[\]]*$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the user, unique
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+          pattern: ^[^<>|\[\]{}]*$
+          description: Name of the user.
+        dateLastModified:
+          type: string
+          format: date-time
+          description: Last modification date of the user.
+          example: "2026-01-13T11:12:20.851"
+        enabled:
+          type: boolean
+          description: If the user is enabled.
+        accountLocked:
+          type: boolean
+          description: If the user is locked.
+        role:
+          $ref: "#/components/schemas/Role"
+        person:
+          $ref: "#/components/schemas/GetPerson"
+        userGroup:
+          $ref: "#/components/schemas/GetUserGroup"
+        department:
+          $ref: "#/components/schemas/GetDepartment"
+        languageCode:
+          type: string
+          minLength: 2
+          maxLength: 4
+          pattern: ^[a-z]{2}([A-Z]{2})?$
+          description: Language code for the user (2-letter language, optional 2-letter country).
+          example: de or deAT
+        email:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: E-Mail of the user.
+          format: email
+        office365Id:
+          type: string
+          description: office365 Id of the user, unique.
+          minLength: 1
+          maxLength: 255
+    GetUsers:
+      type: array
+      items:
+        $ref: "#/components/schemas/GetExternUserDto"
+    GetUsersResponse:
+      type: object
+      x-no-field-selection: true
+      required:
+        - users
+      properties:
+        users:
+          $ref: "#/components/schemas/GetUsers"
+    ErrorCode:
+      type: string
+      enum:
+        - INTERNAL_ERROR
+        - MASTER_DATA_NOT_FOUND
+        - VALIDATION_ERROR
+        - ENTITY_EXPIRED
+        - MESSAGING_GROUP_CALCULATION_ERROR
+        - MESSAGING_READ_CONFIRMATION_ALREADY_CONFIRMED
+        - NOT_FOUND
+        - FORBIDDEN
+        - TT_ONGOING_TIMETABLE_PUBLICATION
+        - TT_UNRESOLVED_CHANGESET
+        - TENANT_INSTALLATION_RECOVERABLE_ERROR
+        - BAD_REQUEST
+        - PW_CHANGE_RULE_VIOLATION
+    ErrorData:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        externKey:
+          type: string
+    ValidationError:
+      type: object
+      required:
+        - path
+        - errorMessage
+      properties:
+        errorKey:
+          type: string
+          enum:
+            - field.mustBeMin
+            - field.mustBeMax
+            - field.mustBeNull
+            - field.mustNotBeNull
+            - field.mustNotBeEmpty
+            - field.mustNotBeBlank
+            - field.sizeInvalid
+            - field.digitsMustMatch
+            - field.mustBeEmail
+            - field.mustBeFuture
+            - field.mustBeFutureOrPresent
+            - field.mustBePast
+            - field.mustBePastOrPresent
+            - field.mustBePositive
+            - field.mustBePositiveOrZero
+            - field.mustBeNegative
+            - field.mustBeNegativeOrZero
+            - field.mustMatchPattern
+            - value.mustHaveIdentity
+            - value.mustBeBefore
+            - value.mustBeAfter
+            - value.alreadyExists
+            - value.mustBeUnique
+            - value.other
+            - value.mustBeIsoCountryCode
+            - entity.notFound
+            - entity.duplicateFound
+            - entity.other
+        path:
+          type: string
+        constraintValue:
+          type: string
+        errorMessage:
+          type: string
+        index:
+          type: integer
+          description: Index of the dto which failed validation in a bulk operation. Count starts from 0.
+        errorData:
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorData"
+    ValidationErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - requestId
+        - traceId
+        - validationErrors
+      properties:
+        errorCode:
+          $ref: "#/components/schemas/ErrorCode"
+        requestId:
+          type: string
+        traceId:
+          type: string
+        validationErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
+    ErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+        - requestId
+        - traceId
+      properties:
+        errorCode:
+          $ref: "#/components/schemas/ErrorCode"
+        errorMessage:
+          type: string
+        requestId:
+          type: string
+        traceId:
+          type: string
+    Person:
+      type: object
+      description: The following fields can be used to identify a person (ordered hierarchically) - person.id, person.externKey, person.shortname. Required if `role` is set to `student`, `teacher`, `legal_guardian` or `apprentice_representative`.
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Internal WebUntis ID, unique.
+        externKey:
+          type: string
+          pattern: ^[^<>|\[\]]*$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the person, unique.
+        shortname:
+          type: string
+          minLength: 1
+          maxLength: 60
+          pattern: ^[^<>|\[\]{}]*$
+          description: Person short name. (e.g. combination of first and family name), unique.
+    UserGroup:
+      type: object
+      description: The following fields can be used to identify a userGroup (ordered hierarchically) during PUT, POST - userGroup.id, userGroup.name. If no userGroup is selected, the default user group for the specific role will be applied.
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Internal WebUntis ID, unique.
+        name:
+          type: string
+          minLength: 1
+          maxLength: 20
+          description: UserGroup name, unique.
+    UserDepartment:
+      type: object
+      description: The following fields can be used to identify a department (ordered hierarchically) - department.id, department.externKey, department.shortname
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Internal WebUntis ID, unique.
+        externKey:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the department, unique.
+        shortname:
+          type: string
+          minLength: 1
+          maxLength: 30
+          description: Unique readable identifier, unique.
+    PutExternUserDto:
+      type: object
+      description: External User Data Transfer Object
+      required:
+        - externUuid
+        - name
+        - role
+        - userGroup
+        - languageCode
+      properties:
+        externUuid:
+          type: string
+          minLength: 1
+          maxLength: 36
+          description: Extern Uuid of the user, randomly generated, unique.
+        externKey:
+          type: string
+          pattern: ^[^<>|\[\]]*$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the user, unique
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+          pattern: ^[^<>|\[\]{}]*$
+          description: Name of the user.
+        enabled:
+          type: boolean
+          description: If the user is enabled.
+        role:
+          $ref: "#/components/schemas/Role"
+        person:
+          $ref: "#/components/schemas/Person"
+        userGroup:
+          $ref: "#/components/schemas/UserGroup"
+        department:
+          $ref: "#/components/schemas/UserDepartment"
+        languageCode:
+          type: string
+          minLength: 2
+          maxLength: 4
+          pattern: ^[a-z]{2}([A-Z]{2})?$
+          description: Language code for the user (2-letter language, optional 2-letter country).
+          example: de or deAT
+        email:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: E-Mail of the user.
+          format: email
+        office365Id:
+          type: string
+          description: office365 Id of the user, unique.
+          minLength: 1
+          maxLength: 255
+    UsersPut:
+      type: array
+      items:
+        $ref: "#/components/schemas/PutExternUserDto"
+    UsersPutRequest:
+      type: object
+      x-no-field-selection: true
+      required:
+        - users
+      properties:
+        users:
+          $ref: "#/components/schemas/UsersPut"
+    PostExternUserDto:
+      type: object
+      description: External User Data Transfer Object
+      required:
+        - name
+        - role
+        - languageCode
+      properties:
+        externKey:
+          type: string
+          pattern: ^[^<>|\[\]]*$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the user, unique
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+          pattern: ^[^<>|\[\]{}]*$
+          description: Name of the user.
+        enabled:
+          type: boolean
+          description: If the user is enabled.
+        role:
+          $ref: "#/components/schemas/Role"
+        person:
+          $ref: "#/components/schemas/Person"
+        userGroup:
+          $ref: "#/components/schemas/UserGroup"
+        department:
+          $ref: "#/components/schemas/UserDepartment"
+        languageCode:
+          type: string
+          minLength: 2
+          maxLength: 4
+          pattern: ^[a-z]{2}([A-Z]{2})?$
+          description: Language code for the user (2-letter language, optional 2-letter country).
+          example: de or deAT
+        email:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: E-Mail of the user.
+          format: email
+        office365Id:
+          type: string
+          description: office365 Id of the user, unique.
+          minLength: 1
+          maxLength: 255
+    Users:
+      type: array
+      items:
+        $ref: "#/components/schemas/PostExternUserDto"
+    UsersPostRequest:
+      type: object
+      x-no-field-selection: true
+      required:
+        - users
+      properties:
+        users:
+          $ref: "#/components/schemas/Users"
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: Page - contains values for limit and offset.
+      required: true
+      schema:
+        $ref: "#/components/schemas/Page"
+    Sorting:
+      name: sorting
+      in: query
+      description: Sorting - contains values for sort and orderby.
+      required: true
+      schema:
+        $ref: "#/components/schemas/Sorting"
+    Filtering:
+      name: filter
+      in: query
+      description: Filter - the filter query e.g. <data field><predicate><value>.
+      required: false
+      schema:
+        type: string
+  responses:
+    bad-request-v1:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+    unauthorized-v1:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    forbidden-v1:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    not-found-v1:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+    internal-error-v1:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"

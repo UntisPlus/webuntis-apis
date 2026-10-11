@@ -1,0 +1,592 @@
+openapi: 3.0.2
+info:
+  title: Extern - API Documentation for class management
+  description: |
+    WebUntis API for extern usage of platform applications to manage classes (incl. department, room and teachers)
+    (Currently WebUntis openapi-specification does not support client code generation).
+
+    IMPORTANT:
+
+    For Classes the following fields need to be unique and one of the two needs to be present for create/update:
+      - shortName
+      - externKey
+    And one of the two is needed from:
+      - schoolyear.referenceDate
+      - schoolyear.id
+  version: 1.0.0
+  contact:
+    name: Untis GmbH
+    url: https://www.untis.at
+    email: support@untis.at
+paths:
+  /api/rest/extern/v2/classes:
+    get:
+      summary: Get a list of classes. Returns all classes for all schoolyears.
+      operationId: getClassesV2
+      tags:
+        - class
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Sorting"
+        - $ref: "#/components/parameters/Filtering"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassesResponse"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+    post:
+      summary: Import a list of classes
+      operationId: createClassesV2
+      tags:
+        - class
+      responses:
+        "200":
+          description: OK - If all sent classes are imported successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassesResponse"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+      requestBody:
+        description: Contains a list of classes that will be imported
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostClassesRequest"
+    put:
+      summary: Update a list of classes
+      operationId: updateClassesV2
+      description: |
+        The following fields can be used to identify a class (ordered hierarchically) - id, externKey, shortName.
+      tags:
+        - class
+      responses:
+        "200":
+          description: OK - If all sent classes are updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassesResponse"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+      requestBody:
+        description: Contains a list of classes that will be updated.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutClassesRequest"
+  /api/rest/extern/v2/classes/{classId}:
+    get:
+      summary: get a class
+      operationId: getClassByIdV2
+      tags:
+        - class
+      parameters:
+        - in: path
+          name: classId
+          required: true
+          description: The externId of the class to retrieve.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetExternClassDto"
+        "400":
+          $ref: "#/components/responses/bad-request-v1"
+        "401":
+          $ref: "#/components/responses/unauthorized-v1"
+        "403":
+          $ref: "#/components/responses/forbidden-v1"
+        "404":
+          $ref: "#/components/responses/not-found-v1"
+        "500":
+          $ref: "#/components/responses/internal-error-v1"
+components:
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: Page - contains values for limit and offset.
+      required: true
+      schema:
+        type: object
+        properties:
+          limit:
+            type: integer
+            format: int32
+            default: 100
+          offset:
+            type: integer
+            format: int32
+    Sorting:
+      name: sorting
+      in: query
+      description: Sorting - contains values for sort and orderby.
+      required: true
+      schema:
+        type: object
+        properties:
+          sort:
+            type: string
+            default: id
+          orderBy:
+            $ref: "#/components/schemas/SortingOrder"
+            default: ASC
+    Filtering:
+      name: filter
+      in: query
+      description: Filter - the filter query e.g. <data field><predicate><value>.
+      required: false
+      schema:
+        type: string
+  schemas:
+    SortingOrder:
+      enum:
+        - ASC
+        - DESC
+    _Details:
+      type: object
+      properties:
+        externKey:
+          type: string
+          pattern: ^[^<>|\[\]]*$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the class, it needs to be unique.
+        shortName:
+          type: string
+          minLength: 1
+          maxLength: 30
+          pattern: ^[^<>|\[\]{}]*$
+          description: Class short name. (e.g. 4A/4A-MAT) needs to be unique.
+        longName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+          pattern: ^[^<>|\[\]{}]*$
+          description: Class long name.
+        alternateName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 60
+          pattern: ^[^<>|\[\]{}]*$
+          description: Class alternate name.
+        nameWinterSemester:
+          type: string
+          maxLength: 30
+          nullable: true
+          minLength: 1
+          pattern: ^[^<>|\[\]{}]*$
+          description: The class name for winter semester.
+        nameSummerSemester:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 30
+          pattern: ^[^<>|\[\]{}]*$
+          description: The class name for summer semester.
+        from:
+          type: string
+          format: date
+          description: The date when the class starts. It isn't limited by the class' schoolyear's start and end date.
+        to:
+          type: string
+          format: date
+          description: The date when the class ends. It isn't limited by the class' schoolyear's start and end date.
+        active:
+          type: boolean
+          description: Marks the class as active or not, which means if the class is ready to be referred from related entities. Default true.
+          default: true
+        text:
+          nullable: true
+          minLength: 1
+          maxLength: 255
+          type: string
+          description: Free text field for additional information.
+        classLevel:
+          type: integer
+          format: int64
+          description: The "level" of the class, refers to which year of study the class is supposed to be taken.
+        numberOfMaleStudents:
+          type: integer
+          format: int32
+          description: Number of male students in the class.
+        numberOfFemaleStudents:
+          type: integer
+          format: int32
+          description: Number of female students in the class.
+        absenceCheck:
+          type: boolean
+          description: Marks if during lessons student absences need to be checked for the class register. Only relevant if tenant has classRegister module.
+          default: false
+        teachingContent:
+          type: boolean
+          description: Marks if the teaching content is mandatory for the class register. Only relevant if tenant has classRegister module.
+          default: false
+    _CompositeIdentity:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        externKey:
+          type: string
+          pattern: ^[^<>|\[\]]*$
+          maxLength: 100
+          description: External identifier of the entity.
+        shortName:
+          type: string
+          maxLength: 30
+          pattern: ^[^<>|\[\]{}]*$
+          description: Short name of the entity.
+    ReadableDepartmentRef:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/_CompositeIdentity"
+      properties:
+        longName:
+          type: string
+          description: Department long name.
+    ReadableRoomRef:
+      type: object
+      properties:
+        longName:
+          type: string
+          description: Room long name.
+      allOf:
+        - $ref: "#/components/schemas/_CompositeIdentity"
+    ReadableClassTeacherRef:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/_CompositeIdentity"
+      properties:
+        surname:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+          pattern: ^[^<>|\[\]{}]*$
+          description: Teacher's surname.
+        firstname:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 60
+          pattern: ^[^<>|\[\]{}]*$
+          description: Teacher's first name.
+    ReadableClassTeacherRefs:
+      type: array
+      items:
+        $ref: "#/components/schemas/ReadableClassTeacherRef"
+    _ReadableRefs:
+      type: object
+      properties:
+        department:
+          $ref: "#/components/schemas/ReadableDepartmentRef"
+          description: Details of department assigned to this class.
+        room:
+          $ref: "#/components/schemas/ReadableRoomRef"
+          description: Details of room assigned to this class.
+        classTeachers:
+          $ref: "#/components/schemas/ReadableClassTeacherRefs"
+          description: Details of class-teachers assigned to this class, in list (json array) format. This does not include all teachers teaching this class but only the main responsible teachers.
+    GetExternClassDto:
+      type: object
+      required:
+        - id
+        - shortName
+        - dateLastModified
+      allOf:
+        - $ref: "#/components/schemas/_Details"
+        - $ref: "#/components/schemas/_ReadableRefs"
+      properties:
+        schoolyearId:
+          type: integer
+          format: int64
+          description: The WU internal id of the class' schoolyear.
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        dateLastModified:
+          type: string
+          format: date-time
+    GetClasses:
+      type: array
+      items:
+        $ref: "#/components/schemas/GetExternClassDto"
+    ClassesResponse:
+      type: object
+      x-no-field-selection: true
+      required:
+        - classes
+      properties:
+        classes:
+          $ref: "#/components/schemas/GetClasses"
+    ErrorCode:
+      type: string
+      enum:
+        - INTERNAL_ERROR
+        - MASTER_DATA_NOT_FOUND
+        - VALIDATION_ERROR
+        - ENTITY_EXPIRED
+        - MESSAGING_GROUP_CALCULATION_ERROR
+        - MESSAGING_READ_CONFIRMATION_ALREADY_CONFIRMED
+        - NOT_FOUND
+        - FORBIDDEN
+        - TT_ONGOING_TIMETABLE_PUBLICATION
+        - TT_UNRESOLVED_CHANGESET
+        - TENANT_INSTALLATION_RECOVERABLE_ERROR
+        - BAD_REQUEST
+        - PW_CHANGE_RULE_VIOLATION
+    ErrorData:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        externKey:
+          type: string
+    ValidationError:
+      type: object
+      required:
+        - path
+        - errorMessage
+      properties:
+        errorKey:
+          type: string
+          enum:
+            - field.mustBeMin
+            - field.mustBeMax
+            - field.mustBeNull
+            - field.mustNotBeNull
+            - field.mustNotBeEmpty
+            - field.mustNotBeBlank
+            - field.sizeInvalid
+            - field.digitsMustMatch
+            - field.mustBeEmail
+            - field.mustBeFuture
+            - field.mustBeFutureOrPresent
+            - field.mustBePast
+            - field.mustBePastOrPresent
+            - field.mustBePositive
+            - field.mustBePositiveOrZero
+            - field.mustBeNegative
+            - field.mustBeNegativeOrZero
+            - field.mustMatchPattern
+            - value.mustHaveIdentity
+            - value.mustBeBefore
+            - value.mustBeAfter
+            - value.alreadyExists
+            - value.mustBeUnique
+            - value.other
+            - value.mustBeIsoCountryCode
+            - entity.notFound
+            - entity.duplicateFound
+            - entity.other
+        path:
+          type: string
+        constraintValue:
+          type: string
+        errorMessage:
+          type: string
+        index:
+          type: integer
+          description: Index of the dto which failed validation in a bulk operation. Count starts from 0.
+        errorData:
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorData"
+    ValidationErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - requestId
+        - traceId
+        - validationErrors
+      properties:
+        errorCode:
+          $ref: "#/components/schemas/ErrorCode"
+        requestId:
+          type: string
+        traceId:
+          type: string
+        validationErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
+    ErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+        - requestId
+        - traceId
+      properties:
+        errorCode:
+          $ref: "#/components/schemas/ErrorCode"
+        errorMessage:
+          type: string
+        requestId:
+          type: string
+        traceId:
+          type: string
+    AssignableDepartmentRef:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/_CompositeIdentity"
+    AssignableRoomRef:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/_CompositeIdentity"
+    AssignableClassTeacherRef:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/_CompositeIdentity"
+    AssignableClassTeacherRefs:
+      type: array
+      items:
+        $ref: "#/components/schemas/AssignableClassTeacherRef"
+    _AssignableRefs:
+      type: object
+      properties:
+        department:
+          $ref: "#/components/schemas/AssignableDepartmentRef"
+          description: "Reference to department to be assigned to this class.To identify a department one of the following must be given: id, externKey, shortName."
+        room:
+          $ref: "#/components/schemas/AssignableRoomRef"
+          description: "Reference to room to be assigned to this class.To identify a room, one of the following must be given: id, externKey, shortName."
+        classTeachers:
+          $ref: "#/components/schemas/AssignableClassTeacherRefs"
+          description: "References to class-teachers to be assigned to this class, in list (json array) format. This does not include all teachers teaching this class but only the main responsible teachers. To identify teachers, one of the following must be given for each object: id, externKey, shortName."
+    SchoolyearRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: The WU internal id of the class' schoolyear.
+        referenceDate:
+          type: string
+          format: date
+          description: A reference date for determining which schoolyear the class belongs to.
+    PutExternClassDto:
+      type: object
+      required:
+        - shortName
+      allOf:
+        - $ref: "#/components/schemas/_Details"
+        - $ref: "#/components/schemas/_AssignableRefs"
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        schoolyear:
+          type: object
+          $ref: "#/components/schemas/SchoolyearRef"
+          description: The reference to schoolyear, either id or referenceDate must be given.
+    PutClasses:
+      type: array
+      items:
+        $ref: "#/components/schemas/PutExternClassDto"
+    PutClassesRequest:
+      type: object
+      x-no-field-selection: true
+      required:
+        - classes
+      properties:
+        classes:
+          $ref: "#/components/schemas/PutClasses"
+    PostExternClassDto:
+      type: object
+      required:
+        - shortName
+      allOf:
+        - $ref: "#/components/schemas/_Details"
+        - $ref: "#/components/schemas/_AssignableRefs"
+      properties:
+        schoolyear:
+          type: object
+          $ref: "#/components/schemas/SchoolyearRef"
+          description: The reference to schoolyear, either id or referenceDate must be given.
+    PostClasses:
+      type: array
+      items:
+        $ref: "#/components/schemas/PostExternClassDto"
+    PostClassesRequest:
+      type: object
+      x-no-field-selection: true
+      required:
+        - classes
+      properties:
+        classes:
+          $ref: "#/components/schemas/PostClasses"
+  responses:
+    bad-request-v1:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+    unauthorized-v1:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    forbidden-v1:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    not-found-v1:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+    internal-error-v1:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"

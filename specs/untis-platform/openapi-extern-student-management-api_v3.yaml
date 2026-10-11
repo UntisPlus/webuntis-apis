@@ -1,0 +1,685 @@
+openapi: 3.0.2
+info:
+  title: Extern - API Documentation for student management
+  description: |
+    WebUntis API for extern usage of platform applications to manage student masterdata incl. class-assignment and userdata.
+    (Currently WebUntis openapi-specification does not support client code generation).
+
+    IMPORTANT:
+
+    For Students the following fields need to be unique and one of the two needs to be present for create/update:
+      - shortName
+      - externKey
+    For Users the following fields need to be unique:
+      - name
+      - externKey
+  version: 3.0.0
+  contact:
+    name: Untis GmbH
+    url: https://www.untis.at
+    email: support@untis.at
+paths:
+  /api/rest/extern/v3/students:
+    get:
+      summary: get a list of students
+      operationId: getStudents
+      tags:
+        - student
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Sorting"
+        - $ref: "#/components/parameters/Filtering"
+        - $ref: '#/components/parameters/SchoolYearId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetStudentsResponse'
+        '400':
+          $ref: '#/components/responses/bad-request-v1'
+        '401':
+          $ref: '#/components/responses/unauthorized-v1'
+        '403':
+          $ref: '#/components/responses/forbidden-v1'
+        '404':
+          $ref: '#/components/responses/not-found-v1'
+        '500':
+          $ref: '#/components/responses/internal-error-v1'
+    post:
+      summary: Import a list of students
+      operationId: createStudents
+      tags:
+        - student
+      responses:
+        '200':
+          description: OK - If all sent students are imported successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentsResponse'
+        '400':
+          $ref: '#/components/responses/bad-request-v1'
+        '401':
+          $ref: '#/components/responses/unauthorized-v1'
+        '403':
+          $ref: '#/components/responses/forbidden-v1'
+        '404':
+          $ref: '#/components/responses/not-found-v1'
+        '500':
+          $ref: '#/components/responses/internal-error-v1'
+      requestBody:
+        description: Contains a list of students that will be imported
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentsRequest'
+    put:
+      summary: Update a list of students
+      operationId: updateStudents
+      description: |
+        The following fields can be used to identify a student (ordered hierarchically) - id, externKey
+        The following fields can be used to identify a student-user (ordered hierarchically) - user.externUuid, user.externKey, user.name
+        If the student does not yet have a user, it is created.
+      tags:
+        - student
+      responses:
+        '200':
+          description: OK - If all sent students are updated succsesfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentsResponse'
+        '400':
+          $ref: '#/components/responses/bad-request-v1'
+        '401':
+          $ref: '#/components/responses/unauthorized-v1'
+        '403':
+          $ref: '#/components/responses/forbidden-v1'
+        '404':
+          $ref: '#/components/responses/not-found-v1'
+        '500':
+          $ref: '#/components/responses/internal-error-v1'
+      requestBody:
+        description: Contains a list of students that will be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentsRequest'
+  /api/rest/extern/v3/students/{studentId}:
+    get:
+      summary: get a student
+      operationId: getStudentById
+      tags:
+        - student
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          description: The id of the student to retrieve
+          schema:
+            type: string
+        - schema: null
+          $ref: '#/components/parameters/SchoolYearId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetExternStudentDto'
+        '400':
+          $ref: '#/components/responses/bad-request-v1'
+        '401':
+          $ref: '#/components/responses/unauthorized-v1'
+        '403':
+          $ref: '#/components/responses/forbidden-v1'
+        '404':
+          $ref: '#/components/responses/not-found-v1'
+        '500':
+          $ref: '#/components/responses/internal-error-v1'
+components:
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: Page - contains values for limit and offset.
+      required: true
+      schema:
+        type: object
+        properties:
+          limit:
+            type: integer
+            format: int32
+            default: 100
+          offset:
+            type: integer
+            format: int32
+    Sorting:
+      name: sorting
+      in: query
+      description: Sorting - contains values for sort and orderby.
+      required: true
+      schema:
+        type: object
+        properties:
+          sort:
+            type: string
+            default: id
+          orderBy:
+            $ref: '#/components/schemas/SortingOrder'
+            default: ASC
+    Filtering:
+      name: filter
+      in: query
+      description: Filter - the filter query e.g. <data field><predicate><value>.
+      required: false
+      schema:
+        type: string
+    SchoolYearId:
+      name: schoolyearId
+      in: query
+      description: SchoolYearId - only include class-assignments of students within the specified school year. If not provided, class-assignment of all school-years will be returned
+      required: false
+      schema:
+        type: integer
+        format: int64
+  schemas:
+    SortingOrder:
+      enum:
+        - ASC
+        - DESC
+    Gender:
+      description: Person's gender
+      type: string
+      enum:
+        - female
+        - male
+        - inter
+    ClassAssignmentWithEndDate:
+      x-no-field-selection: true
+      description: a class is either identified by classId or className with a startDate
+      properties:
+        classId:
+          type: integer
+          format: int64
+          description: Id of the class
+        classExternKey:
+          type: string
+          minLength: 0
+          maxLength: 100
+          description: External identifier of the class
+        startDate:
+          type: string
+          format: date
+          description: Start date of the student in the class
+        endDate:
+          type: string
+          format: date
+          description: End date of the student in the class
+        className:
+          type: string
+          description: short name of the class (e.g. „1A“)
+    PersonAddress:
+      properties:
+        street:
+          type: string
+          maxLength: 100
+          description: Street
+        city:
+          type: string
+          maxLength: 100
+          description: City
+        postCode:
+          type: string
+          maxLength: 20
+          description: Post code
+        country:
+          type: string
+          x-extra-annotation:
+            - '@com.untis.api.validator.annotations.ValidIsoCountryCode'
+          description: Country code (https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: Email address
+        phone:
+          type: string
+          maxLength: 50
+          pattern: '[0-9 +/-]+|^$'
+          description: Phone number
+        mobile:
+          type: string
+          maxLength: 50
+          pattern: '[0-9 +/-]+|^$'
+          description: Mobile phone number
+        fax:
+          type: string
+          maxLength: 50
+          pattern: '[0-9 +/-]+|^$'
+          description: Fax number
+    ExternUser:
+      x-no-field-selection: true
+      required:
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+        dateLastModified:
+          type: string
+          format: date-time
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+          pattern: ^[^<>|\[\]{}]*$
+          description: Username; needs to be unique
+        externKey:
+          type: string
+          minLength: 0
+          maxLength: 100
+          pattern: ^[^<>|\[\]]*$
+          description: External identifier of the user; needs to be unique
+        languageCode:
+          type: string
+          description: Language code for that user (https://de.wikipedia.org/wiki/ISO_639)
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: Email of the user
+        office365Id:
+          type: string
+          description: Identifier for office365
+        enabled:
+          type: boolean
+          default: true
+          description: User is enabled or not
+        externUuid:
+          type: string
+          readOnly: true
+          description: External identifier for OneRoster
+    GetExternStudentDto:
+      type: object
+      required:
+        - lastName
+        - shortName
+      properties:
+        id:
+          type: integer
+          format: int64
+        dateLastModified:
+          type: string
+          format: date-time
+        externKey:
+          type: string
+          pattern: ^[^<>|\[\]]*$
+          minLength: 0
+          maxLength: 100
+          description: External identifier of the student, it needs to be unique
+        nationalId:
+          type: string
+          pattern: ^[A-Za-z0-9\-+\/=_:]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier specific by country/state, needs to be unique
+        catalogNumber:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 32767
+          description: A consecutive number for the students in a class, often given in the alphabetical order of the students surnames, that serves as an identification within the class.
+        attestationRequirement:
+          type: boolean
+          description: Medical certificate required
+        attestationRequirementSince:
+          type: string
+          format: date
+          description: Date since medical certificates are required
+        compulsorySchooling:
+          type: boolean
+          description: Marks a student if he/she is legally required to be in a school (often determined by age or a minimum of years a student hast to attend any school) or if the student is voluntarily attending a school.
+        adult:
+          type: boolean
+          description: Student is of legal age
+        active:
+          type: boolean
+          description: Marks the student as active or not, which means if the student is already at this school.
+        forename:
+          type: string
+          minLength: 0
+          maxLength: 64
+          pattern: ^[^<>|\[\]{}]*$
+          description: Student first name
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: ^[^<>|\[\]{}]*$
+          description: Student family name
+        shortName:
+          type: string
+          minLength: 1
+          maxLength: 60
+          pattern: ^[^<>|\[\]{}]*$
+          description: Student short name. (e.g. combination of first and family name) needs to be unique
+        gender:
+          $ref: '#/components/schemas/Gender'
+        birthDate:
+          type: string
+          format: date
+          description: Students birth date
+        entryDate:
+          type: string
+          format: date
+          description: The date when student started his education at the school
+        exitDate:
+          type: string
+          format: date
+          description: The date when student ended his education at the school
+        text:
+          type: string
+          minLength: 0
+          description: Free text field for additional information
+        classAssignments:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClassAssignmentWithEndDate'
+        address:
+          $ref: '#/components/schemas/PersonAddress'
+        user:
+          $ref: '#/components/schemas/ExternUser'
+        studentAttributes:
+          type: object
+          additionalProperties:
+            type: string
+          description: Custom student attributes
+    GetStudents:
+      type: array
+      items:
+        $ref: '#/components/schemas/GetExternStudentDto'
+    GetStudentsResponse:
+      type: object
+      x-no-field-selection: true
+      required:
+        - students
+      properties:
+        students:
+          $ref: '#/components/schemas/GetStudents'
+    ErrorCode:
+      type: string
+      enum:
+        - INTERNAL_ERROR
+        - MASTER_DATA_NOT_FOUND
+        - VALIDATION_ERROR
+        - ENTITY_EXPIRED
+        - MESSAGING_GROUP_CALCULATION_ERROR
+        - MESSAGING_READ_CONFIRMATION_ALREADY_CONFIRMED
+        - NOT_FOUND
+        - FORBIDDEN
+        - TT_ONGOING_TIMETABLE_PUBLICATION
+        - TT_UNRESOLVED_CHANGESET
+        - TENANT_INSTALLATION_RECOVERABLE_ERROR
+        - BAD_REQUEST
+        - PW_CHANGE_RULE_VIOLATION
+    ErrorData:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        externKey:
+          type: string
+    ValidationError:
+      type: object
+      required:
+        - path
+        - errorMessage
+      properties:
+        errorKey:
+          type: string
+          enum:
+            - field.mustBeMin
+            - field.mustBeMax
+            - field.mustBeNull
+            - field.mustNotBeNull
+            - field.mustNotBeEmpty
+            - field.mustNotBeBlank
+            - field.sizeInvalid
+            - field.digitsMustMatch
+            - field.mustBeEmail
+            - field.mustBeFuture
+            - field.mustBeFutureOrPresent
+            - field.mustBePast
+            - field.mustBePastOrPresent
+            - field.mustBePositive
+            - field.mustBePositiveOrZero
+            - field.mustBeNegative
+            - field.mustBeNegativeOrZero
+            - field.mustMatchPattern
+            - value.mustHaveIdentity
+            - value.mustBeBefore
+            - value.mustBeAfter
+            - value.alreadyExists
+            - value.mustBeUnique
+            - value.other
+            - value.mustBeIsoCountryCode
+            - entity.notFound
+            - entity.duplicateFound
+            - entity.other
+        path:
+          type: string
+        constraintValue:
+          type: string
+        errorMessage:
+          type: string
+        index:
+          type: integer
+          description: Index of the dto which failed validation in a bulk operation. Count starts from 0.
+        errorData:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorData'
+    ValidationErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - requestId
+        - traceId
+        - validationErrors
+      properties:
+        errorCode:
+          $ref: '#/components/schemas/ErrorCode'
+        requestId:
+          type: string
+        traceId:
+          type: string
+        validationErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    ErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+        - requestId
+        - traceId
+      properties:
+        errorCode:
+          $ref: '#/components/schemas/ErrorCode'
+        errorMessage:
+          type: string
+        requestId:
+          type: string
+        traceId:
+          type: string
+    ClassAssignment:
+      x-no-field-selection: true
+      description: a class is either identified by classId or className with a startDate
+      properties:
+        classId:
+          type: integer
+          format: int64
+          description: Id of the class
+        classExternKey:
+          type: string
+          minLength: 0
+          maxLength: 100
+          description: External identifier of the class
+        startDate:
+          type: string
+          format: date
+          description: Start date of the student in the class
+        className:
+          type: string
+          description: short name of the class (e.g. „1A“)
+    ExternStudentDto:
+      type: object
+      required:
+        - lastName
+        - shortName
+      properties:
+        id:
+          type: integer
+          format: int64
+        dateLastModified:
+          type: string
+          format: date-time
+        externKey:
+          type: string
+          pattern: ^[^<>|\[\]]*$
+          minLength: 0
+          maxLength: 100
+          description: External identifier of the student, it needs to be unique
+        nationalId:
+          type: string
+          pattern: ^[A-Za-z0-9\-+\/=_:]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier specific by country/state, needs to be unique
+        catalogNumber:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 32767
+          description: A consecutive number for the students in a class, often given in the alphabetical order of the students surnames, that serves as an identification within the class.
+        attestationRequirement:
+          type: boolean
+          description: Medical certificate required
+        attestationRequirementSince:
+          type: string
+          format: date
+          description: Date since medical certificates are required
+        compulsorySchooling:
+          type: boolean
+          description: Marks a student if he/she is legally required to be in a school (often determined by age or a minimum of years a student hast to attend any school) or if the student is voluntarily attending a school.
+        adult:
+          type: boolean
+          description: Student is of legal age
+        active:
+          type: boolean
+          description: Marks the student as active or not, which means if the student is already at this school.
+        forename:
+          type: string
+          minLength: 0
+          maxLength: 64
+          pattern: ^[^<>|\[\]{}]*$
+          description: Student first name
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: ^[^<>|\[\]{}]*$
+          description: Student family name
+        shortName:
+          type: string
+          minLength: 1
+          maxLength: 60
+          pattern: ^[^<>|\[\]{}]*$
+          description: Student short name. (e.g. combination of first and family name) needs to be unique
+        gender:
+          $ref: '#/components/schemas/Gender'
+        birthDate:
+          type: string
+          format: date
+          description: Students birth date
+        entryDate:
+          type: string
+          format: date
+          description: The date when student started his education at the school
+        exitDate:
+          type: string
+          format: date
+          description: The date when student ended his education at the school
+        text:
+          type: string
+          minLength: 0
+          description: Free text field for additional information
+        classAssignment:
+          $ref: '#/components/schemas/ClassAssignment'
+        address:
+          $ref: '#/components/schemas/PersonAddress'
+        user:
+          $ref: '#/components/schemas/ExternUser'
+        studentAttributes:
+          type: object
+          additionalProperties:
+            type: string
+          description: Custom student attributes
+    Students:
+      type: array
+      items:
+        $ref: '#/components/schemas/ExternStudentDto'
+    StudentsRequest:
+      type: object
+      x-no-field-selection: true
+      required:
+        - students
+      properties:
+        students:
+          $ref: '#/components/schemas/Students'
+    StudentsResponse:
+      type: object
+      x-no-field-selection: true
+      required:
+        - students
+      properties:
+        students:
+          $ref: '#/components/schemas/Students'
+  responses:
+    bad-request-v1:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+    unauthorized-v1:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    forbidden-v1:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    not-found-v1:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+    internal-error-v1:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

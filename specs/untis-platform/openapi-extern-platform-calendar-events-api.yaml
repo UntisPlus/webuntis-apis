@@ -1,0 +1,227 @@
+openapi: 3.1.0
+info:
+  title: WebUntis Timetable External Calendar Events API Documentation
+  description: |
+    *WebUntis timetable external calendar events API*
+    
+    Push (updated) platform calendar events to WebUntis.
+    
+    Version history:
+    - v1    2026-05     team DAY         Initial version for DB based storage of platform calendar events.
+
+  version: "1.0.0"
+  contact:
+    email: support@untis.at
+    name: Untis GmbH
+    url: https://www.untis.at
+
+tags:
+  - name: PlatformCalendarEvents
+    description: Push (updated) platform calendar events to WebUntis.
+
+paths:
+  /api/rest/extern/v1/timetable/events:
+    post:
+      summary: "Update (= add, change, delete events) the calendar data of a platform calendar app in WebUntis."
+      tags:
+        - PlatformCalendarEvents
+      operationId: updatePlatformCalendarEvents
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: There was some validation error.
+        "401":
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        "404":
+          description: Not found.
+        "500":
+          description: Server error.
+      requestBody:
+        description: "(Updated) platform calendar events."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlatformCalendarUpdateDto"
+
+    delete:
+      summary: "Delete all data (= events), from a platform calendar app for a school."
+      tags:
+        - PlatformCalendarEvents
+      operationId: deletePlatformCalendar
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: There was some validation error.
+        "401":
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        "404":
+          description: Not found.
+        "500":
+          description: Server error.
+
+components:
+  schemas:
+    PlatformCalendarUpdateDto:
+      description: "Updated data (calendar events from the platform calendar app) for a school."
+      type: object
+      properties:
+        events_add:
+          description: "Newly added events in the platform calendar app, which have not been pushed before."
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformCalendarEventDto"
+        events_update:
+          description: "Changed events, which have to be updated in WebUntis. The update replaces the complete set of a given event_id: 
+          all previously stored rows for that id — across all elements and users — are removed and rebuilt from the payload."
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformCalendarEventDto"
+        events_delete:
+          description: "Events to delete in WebUntis."
+          type: array
+          items:
+            $ref: "#/components/schemas/Id"
+
+    PlatformCalendarEventDto:
+      description: "Event to add or update."
+      type: object
+      required:
+        - event_id
+        - dates
+        - summary
+      properties:
+        event_id:
+          description: "Id of the event in the platform app (not a WebUntis id). 
+          Must be unique across all dates of all events per platform app and tenant."
+          $ref: "#/components/schemas/Id"
+        dates:
+          description: "All dates of the event."
+          $ref: "#/components/schemas/DateTimeRange"
+        element_type:
+          description: "Either element_type or user_role must be set. You cannot have both for one event and you cannot mix element types with user ids and vice versa.
+          If an event is e.g. for teachers and students, you must push two events with the same event_id and content, one time with element_type=TEACHER
+          (and teacher master data ids if the event is not for all teachers) and one time with element_type=STUDENT (and student master data ids if the event is not for all students).
+          The same applies if you e.g. want to push an event for teachers and admins -> two events with the same event_id and content, one time with element_type=TEACHER 
+          and one time with user_role=ADMIN."
+          $ref: "#/components/schemas/ElementTypeEnum"
+        element_ids:
+          description: "WebUntis master data ids of the elements for the provided element type. Do not pass external ids here. element_type=SCHOOL cannot have ids, these are school-wide events.
+          element_type=DEPARTMENT must have ids, these are department-wide events. In all other cases ids are optional. If no ids are passed, 
+          this means all elements of the provided type will see the event."
+          type: array
+          items:
+            type: integer
+            format: int64
+
+        user_role:
+          $ref: "#/components/schemas/UserRoleEnum"
+        user_ids:
+          description: "WebUntis user ids for the provided user role. Do not pass external ids here.
+          If no ids are passed, this means all users of the provided role will see the event."
+          type: array
+          items:
+            type: integer
+            format: int64
+
+        status:
+          description: "Status of the calendar event."
+          $ref: "#/components/schemas/CalendarStatusEnum"
+
+        summary:
+          description: "Short summary of the calendar event."
+          type: string
+          maxLength: 100
+        description:
+          description: "Description of the calendar event. Can contain multiple lines. Can contain URLs."
+          type: string
+          maxLength: 2000
+        calendar_group:
+          description: "Calendar group of the calendar event as defined in the platform calendar app."
+          type: string
+          maxLength: 100
+        color:
+          description: "Color of the calendar event."
+          type: string
+          pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
+        link:
+          description: "(Deep) link to the event in the platform calendar app."
+          type: string
+          pattern: '^https?://[^\s]+$'   # http/https-URL without whitespace
+          maxLength: 1000
+
+        location:
+          description: "Location of the event (free text). You can pass either a location or a location_id."
+          type: string
+          maxLength: 100
+
+        location_id:
+          description: "WebUntis id (= master data room id) of the location. You can pass either a location_id or a location."
+          type: integer
+          format: int64
+          example: 1234567890
+
+    ElementTypeEnum:
+      type: string
+      description: "The type of an element"
+      enum:
+        - APPRENTICE_REPRESENTATIVE
+        - DEPARTMENT
+        - KLASSE
+        - LEGAL_GUARDIAN
+        - SCHOOL
+        - STUDENT
+        - STUDENT_GROUP
+        - TEACHER
+
+    UserRoleEnum:
+      type: string
+      description: "The role of a user"
+      enum:
+        - ADMIN
+        - DIRECTORATE
+        - OTHER
+        - STAFF
+
+    CalendarStatusEnum:
+      type: string
+      description: "The status of a calendar event"
+      enum:
+        - CONFIRMED
+        - TENTATIVE
+
+    Id:
+      description: "Unique identifier, e.g. a UUID."
+      type: string
+      maxLength: 255
+
+    DateTimeRange:
+      type: object
+      required:
+        - startDate
+        - endDate
+      properties:
+        startDate:
+          type: string
+          format: date
+          description: "Start date in YYYY-MM-DD format."
+        endDate:
+          type: string
+          format: date
+          description: "End date in YYYY-MM-DD format."
+        startTime:
+          type: string
+          format: time
+          description: "Start time in HH:mm format. Defaults to 00:00 if omitted. If you want to push full-day events, leave startTime and endTime empty. 
+          Accepted formats: Zulu time (e.g. 13:00Z), with timezone offset (e.g. 15:00+02:00) or in users local time (e.g. 15:00)."
+        endTime:
+          type: string
+          format: time
+          description: "End time in HH:mm format. Defaults to 23:59 if omitted. If you want to push full-day events, leave startTime and endTime empty. 
+          Accepted formats: Zulu time (e.g. 13:00Z), with timezone offset (e.g. 15:00+02:00) or in users local time (e.g. 15:00)."

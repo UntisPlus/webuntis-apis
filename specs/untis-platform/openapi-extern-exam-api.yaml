@@ -1,0 +1,269 @@
+openapi: 3.0.3
+info:
+  title: WebUntis Exam API Documentation
+  description: |
+    *WebUntis exam API*
+
+    Version history:
+    - 1.0.0     2023-02      stw        Initial version
+
+  version: "1.0.0"
+  contact:
+    email: support@untis.at
+    name: Untis GmbH
+    url: https://www.untis.at
+
+tags:
+  - name: examExtern
+
+paths:
+  /api/rest/extern/v1/exam:
+    get:
+      summary: Retrieves a list of exams (within the bounds of an school year).
+      tags:
+        - examExtern
+      operationId: getExams
+      parameters:
+        # At least one of the following filter criteria is required: dateLastModifiedAfter or start + end
+
+        - name: start
+          description: Start of requested date range in ISO 8601 format.
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2022-02-21"
+
+        - name: end
+          description: End of requested date range in ISO 8601 format.
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2022-02-22"
+
+        - name: dateLastModifiedAfter
+          description: Return only exams changed since this timestamp in ISO 8601 format. Timezone = UTC
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: "2022-02-22T00:00:00"
+
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/ExamListDto"
+
+        "400":
+          description: Client error.
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "500":
+          description: Server error.
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/rest/extern/v1/exam-types:
+    get:
+      summary: Retrieves a list of exam types.
+      tags:
+        - examExtern
+      operationId: getExamTypes
+      parameters:
+        - name: dateLastModifiedAfter
+          description: Return only exam types changed since this timestamp in ISO 8601 format.
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: "2022-02-22T00:00:00"
+
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/ExamTypeListDto"
+
+        "400":
+          description: Client error.
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "500":
+          description: Server error.
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    Error:
+      description: Detailed error information (subset of RFC 7807).
+      type: object
+      required:
+        - title
+        - status
+      properties:
+        title:
+          description: A short, human-readable summary of the problem type.
+          type: string
+        status:
+          description: The HTTP status code.
+          type: integer
+        detail:
+          description: A human-readable explanation specific to this occurrence of the problem.
+          type: string
+
+    Id:
+      description: Untis entity ID.
+      type: integer
+      format: int64
+
+    ExternalId:
+      description: External entity ID.
+      type: string
+      maxLength: 100
+
+    IdExternalId:
+      description: Untis and external Id.
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        externalId:
+          $ref: "#/components/schemas/ExternalId"
+
+    ExamListDto:
+      description: List of exams.
+      type: object
+      required:
+        - exams
+      properties:
+        exams:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExamDto"
+
+    ExamDto:
+      description: General exam data
+      type: object
+      required:
+        - id
+        - start
+        - end
+        - status
+        - teachers
+        - invigilators
+        - students
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        lesson:
+          $ref: "#/components/schemas/IdExternalId"
+
+        start:
+          description: The start time of the exam
+          type: string
+          format: date-time
+        end:
+          description: The end time of the exam.
+          type: string
+          format: date-time
+        dateLastModified:
+          description: The last time when the exam was changed. Timezone = UTC
+          type: string
+          format: date-time
+
+        status:
+          $ref: "#/components/schemas/ExamStatusEnum"
+        examType:
+          $ref: "#/components/schemas/Id"
+        examName:
+          description: The name of the exam.
+          type: string
+          pattern: '^[^<>|\[\]{}]*$'
+          maxLength: 100
+        examText:
+          description: A description text of the exam.
+          type: string
+          pattern: '^[^<>|\[\]{}]*$'
+        teachers:
+          description: The teachers of the class having the exam.
+          type: array
+          items:
+            $ref: "#/components/schemas/IdExternalId"
+        invigilators:
+          description: The invigilators of this exam.
+          type: array
+          items:
+            $ref: "#/components/schemas/IdExternalId"
+        students:
+          description: The selected students of the exam.
+          type: array
+          items:
+            $ref: "#/components/schemas/IdExternalId"
+
+    ExamTypeListDto:
+      description: List of exam types.
+      type: object
+      required:
+        - examTypes
+      properties:
+        examTypes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExamTypeDto"
+
+    ExamTypeDto:
+      description: Exam type data.
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        externalId:
+          $ref: "#/components/schemas/ExternalId"
+        dateLastModified:
+          description: The last time when the exam type was changed. Timezone = UTC
+          type: string
+          format: date-time
+        name:
+          type: string
+          pattern: '^[^<>|\[\]{}]*$'
+          maxLength: 30
+        longName:
+          type: string
+          pattern: '^[^<>|\[\]{}]*$'
+          maxLength: 100
+        inWriting:
+          type: boolean
+          default: true
+
+    ExamStatusEnum:
+      description: |
+        Status of the period:  
+        * REGULAR: Normal status of an exam.  
+        * CANCELLED: The exam was cancelled.
+      type: string
+      enum:
+        - REGULAR
+        - CANCELLED

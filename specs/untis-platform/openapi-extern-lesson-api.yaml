@@ -1,0 +1,397 @@
+openapi: 3.0.2
+info:
+  title: WebUntis Lesson API Documentation
+  description: |
+    *WebUntis Lesson API*
+
+    At least one of request parameters must be set.
+
+    All timestamps are in local time except dateLastModifiedAfter which is in UTC.
+
+    Start/end can be in the gap between, before the first or after the last school year. 
+    Zero or one school year can overlap start/end.
+  version: '1.0'
+  contact:
+    email: support@untis.at
+    name: Untis GmbH
+    url: https://www.untis.at
+tags:
+  - name: lessonExtern
+paths:
+  /api/rest/extern/v1/lesson:
+    get:
+      summary: Retrieves lessons.
+      tags:
+        - lessonExtern
+      operationId: getLessons
+      parameters:
+        - name: start
+          description: Start of requested lessons in ISO 8601 format.
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-02-21'
+        - name: end
+          description: End of requested lessons in ISO 8601 format.
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-02-22'
+        - name: dateLastModifiedAfter
+          description: |
+            Return only lessons changed since this timestamp in ISO 8601 format. Timezone is UTC.
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: '2022-02-22T00:00:00'
+        - name: id
+          description: WebUntis entity IDs of a lesson.
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+            uniqueItems: true
+            minItems: 0
+            maxItems: 50
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/LessonListDto'
+        '400':
+          $ref: '#/components/responses/bad-request-v1'
+        '401':
+          $ref: '#/components/responses/unauthorized-v1'
+        '403':
+          $ref: '#/components/responses/forbidden-v1'
+        '404':
+          $ref: '#/components/responses/not-found-v1'
+        '500':
+          $ref: '#/components/responses/internal-error-v1'
+components:
+  schemas:
+    LessonListDto:
+      description: List of lessons.
+      type: object
+      required:
+        - lessons
+      properties:
+        lessons:
+          type: array
+          items:
+            $ref: '#/components/schemas/LessonDto'
+    LessonDto:
+      description: Lesson data (id, master data etc.).
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          description: WebUntis entity Id.
+          type: integer
+          format: int64
+          example: 1453
+        lessonNo:
+          description: |
+            WebUntis lesson number. This is an identifier created by WebUntis. If the lesson is imported from Untis,
+            the lesson number is usually the same as the `lectureId`.
+          type: integer
+          format: int64
+          example: 954200
+        lectureId:
+          description: |
+            Untis lecture ID. This is an ID that is created by Untis for regular lessons and is therefore only set if
+            the lesson was imported from Untis.
+          type: integer
+          format: int64
+          example: 242400
+        start:
+          description: The start date of the lesson.
+          type: string
+          format: date
+        end:
+          description: The end date of the lesson.
+          type: string
+          format: date
+        displayName:
+          description: Concatenated display names of classes and student groups and subjects.
+          type: string
+          maxLength: 255
+          example: 1a Group2 Math
+        dateLastModified:
+          description: The last time when the lesson was changed. Timezone = UTC
+          type: string
+          format: date-time
+        classes:
+          description: The classes of the lesson.
+          type: array
+          items:
+            $ref: '#/components/schemas/ClassDto'
+        subjects:
+          description: The subjects of the lesson.
+          type: array
+          items:
+            $ref: '#/components/schemas/SubjectDto'
+        teachers:
+          description: The teachers of the lesson.
+          type: array
+          items:
+            $ref: '#/components/schemas/TeacherDto'
+        students:
+          description: The students of the lesson.
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentDto'
+        studentgroups:
+          description: The student groups of the lesson.
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentGroupDto'
+        periodsPerWeek:
+          description: The (target-)number of periods per week.
+          type: integer
+          format: int32
+          example: 4
+    ClassDto:
+      description: Data for a class.
+      allOf:
+        - $ref: '#/components/schemas/MasterDataObjectDto'
+    SubjectDto:
+      description: Data for a subject.
+      allOf:
+        - $ref: '#/components/schemas/MasterDataObjectDto'
+    TeacherDto:
+      description: Data for a teacher.
+      allOf:
+        - $ref: '#/components/schemas/MasterDataPersonDto'
+    StudentDto:
+      description: Data for a student.
+      allOf:
+        - $ref: '#/components/schemas/MasterDataPersonDto'
+      properties:
+        assignments:
+          description: Assignment of a student to a lesson either by klasse or by studentGroup.
+          type: array
+          items:
+            $ref: '#/components/schemas/DateRange'
+    DateRange:
+      description: A date range in ISO 8601.
+      type: object
+      required:
+        - start
+        - end
+      properties:
+        start:
+          description: The start date as ISO 8601.
+          type: string
+          format: date
+          example: '2023-04-28'
+        end:
+          description: The end date as ISO 8601.
+          type: string
+          format: date
+          example: '2023-05-02'
+    StudentGroupDto:
+      description: Data for a student group.
+      allOf:
+        - $ref: '#/components/schemas/MasterDataObjectDto'
+    MasterDataObjectDto:
+      description: Base object for master data objects.
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          description: WebUntis entity Id.
+          type: integer
+          format: int64
+          example: 1453
+        externKey:
+          description: External entity Id.
+          type: string
+          maxLength: 100
+        shortName:
+          description: Short name of entity.
+          type: string
+          maxLength: 30
+        longName:
+          description: Long name of entity.
+          type: string
+          maxLength: 100
+    MasterDataPersonDto:
+      description: Base object for master data persons.
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          description: WebUntis entity Id.
+          type: integer
+          format: int64
+          example: 1453
+        externKey:
+          description: External entity Id.
+          type: string
+          maxLength: 100
+        shortName:
+          description: Short name of person.
+          type: string
+          maxLength: 30
+        firstName:
+          description: First name of person.
+          type: string
+          maxLength: 100
+        lastName:
+          description: Last name of person.
+          type: string
+          maxLength: 100
+    ErrorCode:
+      type: string
+      enum:
+        - INTERNAL_ERROR
+        - MASTER_DATA_NOT_FOUND
+        - VALIDATION_ERROR
+        - ENTITY_EXPIRED
+        - MESSAGING_GROUP_CALCULATION_ERROR
+        - MESSAGING_READ_CONFIRMATION_ALREADY_CONFIRMED
+        - NOT_FOUND
+        - FORBIDDEN
+        - TT_ONGOING_TIMETABLE_PUBLICATION
+        - TT_UNRESOLVED_CHANGESET
+        - TENANT_INSTALLATION_RECOVERABLE_ERROR
+        - BAD_REQUEST
+        - PW_CHANGE_RULE_VIOLATION
+    ErrorData:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        externKey:
+          type: string
+    ValidationError:
+      type: object
+      required:
+        - path
+        - errorMessage
+      properties:
+        errorKey:
+          type: string
+          enum:
+            - field.mustBeMin
+            - field.mustBeMax
+            - field.mustBeNull
+            - field.mustNotBeNull
+            - field.mustNotBeEmpty
+            - field.mustNotBeBlank
+            - field.sizeInvalid
+            - field.digitsMustMatch
+            - field.mustBeEmail
+            - field.mustBeFuture
+            - field.mustBeFutureOrPresent
+            - field.mustBePast
+            - field.mustBePastOrPresent
+            - field.mustBePositive
+            - field.mustBePositiveOrZero
+            - field.mustBeNegative
+            - field.mustBeNegativeOrZero
+            - field.mustMatchPattern
+            - value.mustHaveIdentity
+            - value.mustBeBefore
+            - value.mustBeAfter
+            - value.alreadyExists
+            - value.mustBeUnique
+            - value.other
+            - value.mustBeIsoCountryCode
+            - entity.notFound
+            - entity.duplicateFound
+            - entity.other
+        path:
+          type: string
+        constraintValue:
+          type: string
+        errorMessage:
+          type: string
+        index:
+          type: integer
+          description: Index of the dto which failed validation in a bulk operation. Count starts from 0.
+        errorData:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorData'
+    ValidationErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - requestId
+        - traceId
+        - validationErrors
+      properties:
+        errorCode:
+          $ref: '#/components/schemas/ErrorCode'
+        requestId:
+          type: string
+        traceId:
+          type: string
+        validationErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    ErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+        - requestId
+        - traceId
+      properties:
+        errorCode:
+          $ref: '#/components/schemas/ErrorCode'
+        errorMessage:
+          type: string
+        requestId:
+          type: string
+        traceId:
+          type: string
+  responses:
+    bad-request-v1:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+    unauthorized-v1:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    forbidden-v1:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    not-found-v1:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+    internal-error-v1:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

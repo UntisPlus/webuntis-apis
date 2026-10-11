@@ -1,0 +1,465 @@
+openapi: 3.0.2
+info:
+  title: WebUntis Class Register Absences extern API documentation
+  description: WebUntis API for external usage of platform applications to retrieve student absences information.
+  version: 1.0.0
+  contact:
+    name: Untis GmbH
+    url: http://www.untis.at
+    email: support@untis.at
+paths:
+  /api/rest/extern/v1/classreg/students/absencetimes:
+    get:
+      summary: Retrieves a student absence times details (within the bounds of a single school year).
+      tags:
+        - class-reg-ext-student-absence
+      operationId: getStudentAbsenceTimes
+      parameters:
+        - name: start
+          description: Lower date-time range boundary of requested absences in ISO 8601 format. Must be in the same school year as end.
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+            example: "2022-02-21T00:00:00"
+        - name: end
+          description: Upper date-time range boundary of requested absences in ISO 8601 format. Must be in the same school year as start.
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+            example: "2022-02-22T00:00:00"
+        - name: studentExternKey
+          description: WebUntis student external ID. Either className or studentExternKey must be provided.
+          in: query
+          schema:
+            type: string
+            example: "001"
+        - name: className
+          description: WebUntis name of the class. Either className or studentExternKey must be provided.
+          in: query
+          schema:
+            type: string
+            example: 1-AHELE
+        - name: countingOnly
+          required: false
+          description: If provided and true then counting absences only are about to be included. If not provided or false, all absences will be included.
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/ClassRegExtStudentsAbsenceTimesRespDto"
+        "400":
+          description: Client error - bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Server error
+  /api/rest/extern/v1/classreg/students/absences:
+    post:
+      summary: |
+        Retrieves student absences for a given set of students. It is a POST request as we want the number of 
+        student IDs not to be limited by server infrastructure.
+      tags:
+        - class-reg-ext-student-absence
+      operationId: getStudentAbsences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClassRegGetStudentAbsencesRequestDto"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/ClassRegExtStudentAbsencesDto"
+        "400":
+          description: Client error - bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Server error
+  /api/rest/extern/v1/classreg/students/lessonabsences:
+    get:
+      summary: It provides the student absences statistics in relation to the lessons.
+      tags:
+        - class-reg-ext-student-lesson-absence
+      operationId: getStudentLessonAbsences
+      parameters:
+        - name: start
+          description: Lower date-time range boundary of requested lesson-absences info in ISO 8601 format. Must be in the same school year as upper one. If not provided, then WebUntis tries to resolve it.
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: "2023-09-01T00:00:00"
+        - name: end
+          description: Upper date-time range boundary of requested lesson-absences info in ISO 8601 format. Must be in the same school year as lower. If not provided, then WebUntis tries to resolve it.
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: "2023-06-30T23:59:59"
+        - name: studentId
+          description: WebUntis internal student ID. Mandatory, if lessonId param is not provided.
+          in: query
+          required: false
+          schema:
+            format: int64
+            type: integer
+        - name: lessonId
+          description: WebUntis internal lesson ID of the lesson. Mandatory, if studentId param is not provided.
+          in: query
+          required: false
+          schema:
+            format: int64
+            type: integer
+        - name: countingOnly
+          required: false
+          description: If provided and true, then counting absences only will be considered when calculating statistics. If not provided or false, all absences will be considered.
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/ClassRegExtStudentLessonAbsencesDto"
+        "400":
+          description: Client error - bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Server error
+components:
+  schemas:
+    ClassRegGetStudentAbsencesRequestDto:
+      type: object
+      required:
+        - studentIds
+        - start
+        - end
+      properties:
+        studentIds:
+          description: Absences for this set of students will be returned.
+          items:
+            type: integer
+            format: int64
+          type: array
+          minItems: 1
+          maxItems: 1000
+        start:
+          description: |
+            Lower date-time range boundary of requested absences in ISO 8601 format. Must be in the same school year as end.
+          type: string
+          format: date-time
+          example: "2022-02-21T00:00:00"
+        end:
+          description: |
+            Upper date-time range boundary of requested absences in ISO 8601 format. Must be in the same school year as start.
+          type: string
+          format: date-time
+          example: "2022-02-22T00:00:00"
+    ClassRegExtStudentAbsencesDto:
+      type: object
+      required:
+        - studentAbsences
+      properties:
+        studentAbsences:
+          items:
+            $ref: "#/components/schemas/ClassRegExtStudentAbsenceDto"
+    ClassRegExtStudentAbsenceDto:
+      type: object
+      required:
+        - studentId
+        - start
+        - end
+      properties:
+        studentId:
+          description: The student ID of the absence.
+          type: integer
+          format: int64
+        start:
+          description: Start date-time of the student absence.
+          type: string
+          format: date-time
+          example: "2023-09-01T00:00:00"
+        end:
+          description: End date-time of the student absence.
+          type: string
+          format: date-time
+          example: "2023-09-01T00:00:00"
+        interruptions:
+          description: Interruptions of the student absence. Only provided if the absence is interrupted.
+          items:
+            $ref: "#/components/schemas/ClassRegExtStudentAbsenceInterruptionDto"
+          type: array
+    ClassRegExtStudentAbsenceInterruptionDto:
+      type: object
+      description: Time range within a student absence during which the student was not absent.
+      required:
+        - start
+        - end
+      properties:
+        start:
+          description: Start date-time of the interruption.
+          type: string
+          format: date-time
+          example: "2023-09-01T10:00:00"
+        end:
+          description: End date-time of the interruption.
+          type: string
+          format: date-time
+          example: "2023-09-01T11:00:00"
+    ClassRegExtStudentsAbsenceTimesRespDto:
+      type: object
+      required:
+        - students
+      properties:
+        settings:
+          $ref: "#/components/schemas/ClassRegAbsenceTimesSettingsDto"
+        students:
+          items:
+            $ref: "#/components/schemas/ClassRegExtStudentAbsenceTimesDto"
+          type: array
+    ClassRegAbsenceTimesSettingsDto:
+      type: object
+      description: Class register settings object for absences
+      required:
+        - missedPeriodCountsFrom
+        - dayOfAbsenceCountsFrom
+      properties:
+        missedPeriodCountsFrom:
+          $ref: "#/components/schemas/ClassRegSettingsCountDto"
+        dayOfAbsenceCountsFrom:
+          $ref: "#/components/schemas/ClassRegSettingsCountDto"
+    ClassRegSettingsCountDto:
+      type: object
+      description: Provides settings value in percent (ratio) or minutes (absolute value).
+      required:
+        - value
+        - unit
+      properties:
+        value:
+          format: int32
+          type: integer
+        unit:
+          type: string
+          enum:
+            - minutes
+            - percent
+    ClassRegExtStudentAbsenceTimesDto:
+      type: object
+      description: Student and associated absence statistitcs.
+      required:
+        - studentId
+        - totals
+        - excusedTotals
+        - unexcusedTotals
+        - absenceTimes
+      properties:
+        studentId:
+          description: WebUntis student's internal ID.
+          format: int64
+          type: integer
+        studentExternKey:
+          description: External ID of the student.
+          type: string
+        totals:
+          $ref: "#/components/schemas/ClassRegExtStudentAbsenceTimesStatsDto"
+        excusedTotals:
+          $ref: "#/components/schemas/ClassRegExtStudentAbsenceTimesStatsDto"
+        unexcusedTotals:
+          $ref: "#/components/schemas/ClassRegExtStudentAbsenceTimesStatsDto"
+        absenceTimes:
+          items:
+            $ref: "#/components/schemas/ClassRegExtStudentAbsencePeriodTimeDto"
+          type: array
+    ClassRegExtStudentAbsenceTimesStatsDto:
+      type: object
+      description: Wrapper for student absences statistics. It is intended to be associated with particular absences statistics category (totals, excusedTotals, unexcusedTotals).
+      required:
+        - days
+        - hours
+        - delays
+      properties:
+        days:
+          $ref: "#/components/schemas/ClassRegExtStudentAbsenceTimesStatsDaysDto"
+        hours:
+          description: Total number of student's absenting hours (calculated according to the Class Register settings)
+          format: int32
+          type: integer
+        delays:
+          description: Total number of student's delays (number of periods which student attended partially - and so evaluated as latenesses)
+          format: int32
+          type: integer
+    ClassRegExtStudentAbsenceTimesStatsDaysDto:
+      type: object
+      description: Wrapper for statistics subgroup of absenting days.
+      required:
+        - count
+        - remainingHours
+      properties:
+        count:
+          description: Total number of absenting days (calculated according to the Class Register settings)
+          format: int32
+          type: integer
+        remainingHours:
+          description: Total number of hours (calculated according to the Class Register settings) not resulting in absent day.
+          format: int32
+          type: integer
+    ClassRegExtStudentAbsencePeriodTimeDto:
+      type: object
+      description: Absence time - period and related absence information.
+      required:
+        - start
+        - end
+        - minutes
+        - subjectName
+        - status
+        - type
+      properties:
+        start:
+          description: The start date-time of absence for this period in ISO 8601 format.
+          example: "2019-12-23T07:45:00Z"
+          format: date-time
+          type: string
+        end:
+          description: The end date-time of absence for this period in ISO 8601 format.
+          example: "2019-12-23T07:45:00Z"
+          format: date-time
+          type: string
+        minutes:
+          description: Total number of missed period minutes.
+          format: int32
+          type: integer
+        subjectName:
+          description: Name of the period's subject.
+          type: string
+        status:
+          description: Excuse status of this missed period.
+          type: string
+        type:
+          $ref: "#/components/schemas/ClassRegExtStudentAbsenceTypeEnum"
+    ClassRegExtStudentAbsenceTypeEnum:
+      description: Type of absence.
+      type: string
+      enum:
+        - DELAY
+        - ABSENCE
+    ClassRegExtStudentLessonAbsencesDto:
+      type: object
+      required:
+        - start
+        - end
+        - countingOnly
+        - lessons
+        - students
+      properties:
+        start:
+          description: Min. date-time considered for the stats in this response
+          example: "2023-09-01T00:00:00Z"
+          format: date-time
+          type: string
+        end:
+          description: Max. date-time considered for the stats in this response
+          example: "2024-06-30T23:59:59Z"
+          format: date-time
+          type: string
+        countingOnly:
+          description: It identifies whether non-counting absences are considered (false) in this response or excluded (true).
+          type: boolean
+        lessons:
+          items:
+            $ref: "#/components/schemas/ClassRegExtStudentLessonAbsencesLessonDto"
+          type: array
+        students:
+          items:
+            $ref: "#/components/schemas/ClassRegExtStudentLessonAbsencesStudentDto"
+          type: array
+    ClassRegExtStudentLessonAbsencesLessonDto:
+      type: object
+      description: General date-range related statistics of the lesson.
+      required:
+        - lessonId
+        - periodsTotal
+      properties:
+        lessonId:
+          description: WebUntis internal ID of the Lesson.
+          format: int64
+          type: integer
+        subjectId:
+          description: WebUntis internal ID of the Subject.
+          format: int64
+          type: integer
+        subjectName:
+          description: Name of the lesson's subject.
+          type: string
+        periodsTotal:
+          $ref: "#/components/schemas/ClassRegExtStudentLessonAbsencesPeriodsTotalDto"
+    ClassRegExtStudentLessonAbsencesStudentDto:
+      type: object
+      description: Lesson-absence info related to the specific student.
+      required:
+        - studentId
+        - lessons
+      properties:
+        studentId:
+          description: WebUntis internal ID of the Student.
+          format: int64
+          type: integer
+        lessons:
+          items:
+            $ref: "#/components/schemas/ClassRegExtStudentLessonAbsencesStudentLessonDto"
+          type: array
+    ClassRegExtStudentLessonAbsencesStudentLessonDto:
+      type: object
+      description: Lesson-related absence statistics in the context of student.
+      required:
+        - lessonId
+        - absentPeriodsTotal
+        - excusedPeriodsTotal
+      properties:
+        lessonId:
+          description: WebUntis internal ID of the Lesson.
+          format: int64
+          type: integer
+        absentPeriodsTotal:
+          $ref: "#/components/schemas/ClassRegExtStudentLessonAbsencesPeriodsTotalDto"
+        excusedPeriodsTotal:
+          $ref: "#/components/schemas/ClassRegExtStudentLessonAbsencesPeriodsTotalDto"
+    ClassRegExtStudentLessonAbsencesPeriodsTotalDto:
+      type: object
+      description: Lesson-period-related statistics.
+      required:
+        - count
+        - minutes
+      properties:
+        count:
+          description: Total number of periods' hours related to the context and lesson. Default period length and class register settings' absence threshold percentage are taken into consideration.
+          format: int32
+          type: integer
+        minutes:
+          description: Total number of periods' minutes related to the context and lesson.
+          format: int32
+          type: integer

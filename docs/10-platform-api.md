@@ -7,6 +7,9 @@
 > 📚 **Full offline copy:** the entire official documentation is mirrored under
 > [`platform/`](platform/README.md) (42 pages: auth, all resource APIs,
 > OneRoster, webhooks, guides). This page is the quick orientation.
+>
+> 📄 **Machine-readable schemas:** complete OpenAPI specs for all 15 Platform
+> APIs are in [`specs/untis-platform/`](../specs/untis-platform/README.md).
 
 ## Base URLs
 

@@ -1,0 +1,380 @@
+openapi: '3.0.2'
+info:
+  title: Extern - API Documentation for Teacher Absences management
+  description: |
+    *WebUntis Teacher Absences API*
+    
+    WebUntis API for extern usage of platform applications to manage teacher absences.
+    
+    Version history:
+    - v1    2026-05     zcs-epam         Initial version
+    - v1    2026-07     swa              Added dateLastModified
+
+  version: '1.0.0'
+  contact:
+    name: Untis GmbH
+    url: 'https://www.untis.at'
+    email: support@untis.at
+
+
+tags:
+  - name: teacher-absence
+
+paths:
+  /api/rest/extern/v1/teacher-absence:
+    get:
+      summary: get a list of Teacher Absences
+      description: |
+        This endpoint allows clients to retrieve a list of Teacher Absences.
+        Clients can filter results by specifying
+         - a date range (start and end in ISO 8601 format)
+         - a timestamp (dateLastModifiedAfter)
+         - a specific teacher (teacherId)
+         - an absence reason (reasonId)
+         - and whether to include deleted absences (includeDeleted, default false)
+
+        All the parameters are optional. You can use any combination of these parameters to filter the results, or omit them entirely to retrieve all (non-deleted) Teacher Absences.
+      operationId: getTeacherAbsences
+      tags:
+        - teacher-absence
+      parameters:
+        - name: start
+          description:
+            Start of requested date range in ISO 8601 format.
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2026-02-21"
+
+        - name: end
+          description: End of requested date range in ISO 8601 format.
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2026-02-22"
+
+        - name: dateLastModifiedAfter
+          description: >
+            Return only teacher absences changed since this timestamp in ISO 8601 format. 
+            Time zone is UTC.
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: "2026-02-22T00:00:00"
+
+        - name: teacherId
+          description: WebUntis id of a single Teacher
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+            example: 42
+
+        - name: reasonId
+          description: WebUntis id of a single Absence Reason
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+            example: 42
+
+        - name: includeDeleted
+          description: Boolean flag to include/exclude deleted absences. Default false, ie exclude
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+
+
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternTeacherAbsenceListDto'
+        400:
+          $ref: 'schemas/error/bad-request-v1.yaml'
+        401:
+          $ref: 'schemas/error/unauthorized-v1.yaml'
+        403:
+          $ref: 'schemas/error/forbidden-v1.yaml'
+        404:
+          $ref: 'schemas/error/not-found-v1.yaml'
+        500:
+          $ref: 'schemas/error/internal-error-v1.yaml'
+
+    post:
+      summary: Create a new Teacher Absence
+      description: |
+        This endpoint allows clients to create a new Teacher Absence.
+      operationId: createTeacherAbsence
+      tags:
+        - teacher-absence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternTeacherAbsenceCreateDto'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternTeacherAbsenceDto'
+        400:
+          $ref: 'schemas/error/bad-request-v1.yaml'
+        401:
+          $ref: 'schemas/error/unauthorized-v1.yaml'
+        403:
+          $ref: 'schemas/error/forbidden-v1.yaml'
+        500:
+          $ref: 'schemas/error/internal-error-v1.yaml'
+
+  /api/rest/extern/v1/teacher-absence/{id}:
+    get:
+      summary: get a Teacher Absences by WebUntis id
+      operationId: getTeacherAbsenceById
+      tags:
+        - teacher-absence
+      parameters:
+        - name: id
+          description:
+            WebUntis id of the Teacher Absence
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 42
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternTeacherAbsenceDto'
+        400:
+          $ref: 'schemas/error/bad-request-v1.yaml'
+        401:
+          $ref: 'schemas/error/unauthorized-v1.yaml'
+        403:
+          $ref: 'schemas/error/forbidden-v1.yaml'
+        404:
+          $ref: 'schemas/error/not-found-v1.yaml'
+        500:
+          $ref: 'schemas/error/internal-error-v1.yaml'
+
+    put:
+      summary: Update an existing Teacher Absence
+      description: |
+        This endpoint allows clients to update an existing Teacher Absence.
+      operationId: updateTeacherAbsence
+      tags:
+        - teacher-absence
+      parameters:
+        - name: id
+          description: WebUntis id of the Teacher Absence
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 42
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternTeacherAbsenceUpdateDto'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternTeacherAbsenceDto'
+        400:
+          $ref: 'schemas/error/bad-request-v1.yaml'
+        401:
+          $ref: 'schemas/error/unauthorized-v1.yaml'
+        403:
+          $ref: 'schemas/error/forbidden-v1.yaml'
+        404:
+          $ref: 'schemas/error/not-found-v1.yaml'
+        500:
+          $ref: 'schemas/error/internal-error-v1.yaml'
+
+    delete:
+      summary: Delete a Teacher Absence by WebUntis id
+      description: |
+        This endpoint allows clients to delete a Teacher Absence by its id.
+      operationId: deleteTeacherAbsence
+      tags:
+        - teacher-absence
+      parameters:
+        - name: id
+          description: WebUntis id of the Teacher Absence
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 42
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternTeacherAbsenceDto'
+        400:
+          $ref: 'schemas/error/bad-request-v1.yaml'
+        401:
+          $ref: 'schemas/error/unauthorized-v1.yaml'
+        403:
+          $ref: 'schemas/error/forbidden-v1.yaml'
+        404:
+          $ref: 'schemas/error/not-found-v1.yaml'
+        500:
+          $ref: 'schemas/error/internal-error-v1.yaml'
+
+
+
+components:
+  schemas:
+    ExternTeacherAbsenceListDto:
+      description: List of Teacher Absences.
+      type: object
+      required:
+        - absences
+      properties:
+        absences:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExternTeacherAbsenceDto"
+
+    ExternTeacherAbsenceDto:
+      description: A single Teacher Absence
+      type: object
+      required:
+        - id
+        - dateLastModified
+        - start
+        - end
+        - teacher
+        - reason
+        - deleted
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: false
+          description: Teacher Absence's id in WebUntis
+
+        externKey:
+          type: string
+          pattern: '^[^<>|\[\]]*$'
+          nullable: true
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the Teacher Absence
+
+        dateLastModified:
+          description: The last time when the absence was changed. Timezone = UTC
+          type: string
+          format: date-time
+
+        start:
+          type: string
+          format: date-time
+          nullable: false
+          description: The start date-time of the Teacher Absence
+
+        end:
+          type: string
+          format: date-time
+          nullable: false
+          description: The end date-time of the Teacher Absence
+
+        teacherId:
+          type: integer
+          format: int64
+          nullable: false
+          description: Teacher's id in WebUntis
+
+        reasonId:
+          type: integer
+          format: int64
+          nullable: true
+          description: Absence Reason's id in WebUntis
+
+        deleted:
+          type: boolean
+          nullable: false
+          description: Indicates if the Teacher Absence is deleted in WebUntis
+
+        note:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 255
+          description: The note of the Teacher Absence
+
+    ExternTeacherAbsenceUpdateDto:
+      description: Data required to update a Teacher Absence
+      type: object
+      required:
+        - start
+        - end
+      properties:
+        start:
+          type: string
+          format: date-time
+          nullable: false
+          description: The start date-time of the Teacher Absence
+        end:
+          type: string
+          format: date-time
+          nullable: false
+          description: The end date-time of the Teacher Absence
+        reasonId:
+          type: integer
+          format: int64
+          nullable: true
+          description: Absence Reason's id in WebUntis
+        note:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 255
+          description: The note of the Teacher Absence
+
+
+    ExternTeacherAbsenceCreateDto:
+      description: Data required to create a Teacher Absence
+      allOf:
+        - $ref: "#/components/schemas/ExternTeacherAbsenceUpdateDto"
+        - type: object
+          required:
+            - teacherId
+          properties:
+            teacherId:
+              type: integer
+              format: int64
+              nullable: false
+              description: Teacher's id in WebUntis
+
+
+

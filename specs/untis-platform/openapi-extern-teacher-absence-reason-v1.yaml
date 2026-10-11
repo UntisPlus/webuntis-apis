@@ -1,0 +1,131 @@
+openapi: '3.0.2'
+info:
+  title: Extern - API Documentation for Teacher Absence REASON management
+  description: |
+    *WebUntis Teacher Absence Reason API*
+    
+    WebUntis API for extern usage of platform applications to manage teacher absence reasons.
+    
+    Version history:
+    - v1    2026-05     stw        Initial version
+
+  version: '1.0.0'
+  contact:
+    name: Untis GmbH
+    url: 'https://www.untis.at'
+    email: support@untis.at
+
+
+tags:
+  - name: teacher-absence-reason
+
+paths:
+  /api/rest/extern/v1/teacher-absence-reason:
+    get:
+      summary: Get a list of teacher absence reasons
+      description: |
+        This endpoint allows clients to retrieve a list of teacher absence reasons.
+      operationId: getTeacherAbsenceReasons
+      tags:
+        - teacher-absence-reason
+      parameters:
+        - name: includeDeleted
+          description: |
+            Boolean flag to include/exclude deleted absence reasons. Default false, i.e. exclude
+            WU/SP remove reasons form the DB if they are not used. Therefore deleted reasons might not be available anymore.
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+
+        - name: dateLastModified
+          description: >
+            Return only changed values since this timestamp in ISO 8601 format. 
+            Time zone is UTC.
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: "2022-02-22T00:00:00"
+
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternTeacherAbsenceReasonListDto'
+        400:
+          $ref: 'schemas/error/bad-request-v1.yaml'
+        401:
+          $ref: 'schemas/error/unauthorized-v1.yaml'
+        403:
+          $ref: 'schemas/error/forbidden-v1.yaml'
+        404:
+          $ref: 'schemas/error/not-found-v1.yaml'
+        500:
+          $ref: 'schemas/error/internal-error-v1.yaml'
+
+components:
+  schemas:
+    ExternTeacherAbsenceReasonListDto:
+      description: List of teacher absence reasons.
+      type: object
+      required:
+        - absences
+      properties:
+        absences:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExternTeacherAbsenceReasonDto"
+
+    ExternTeacherAbsenceReasonDto:
+      description: A single teacher absence reason
+      type: object
+      required:
+        - id
+        - status
+        - name
+        - longname
+        - countAbsence
+        - isMaternityLeave
+        - isParentalLeave
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: false
+          description: WebUntis id of teacher absence reason
+
+        isDeleted:
+          type: boolean
+          nullable: false
+          description: True if this reason is deleted
+
+        name:
+          type: string
+          nullable: false
+          description: The short name of the teacher absence reason
+
+        longname:
+          type: string
+          nullable: false
+          description: The long name of the teacher absence reason
+
+        countAbsence:
+          type: boolean
+          nullable: false
+          description: Should this absence count in substitution statistics?
+
+        isMaternityLeave:
+          type: boolean
+          nullable: false
+          description: Indicates this reason as maternity leave (Mutterschutz, before and after birth)
+
+        isParentalLeave:
+          type: boolean
+          nullable: false
+          description: Indicates this reason as paternity leave (Elternkarenz, after maternity leave)
+

@@ -1,0 +1,456 @@
+openapi: 3.0.3
+info:
+  title: Extern - API Documentation for subject management
+  description: |
+    WebUntis API for extern subject management
+  version: 1.0.0
+  contact:
+    name: Untis GmbH
+    url: https://www.untis.at
+    email: support@untis.at
+paths:
+  /api/rest/extern/v1/subjects:
+    get:
+      summary: Get a list of all subjects
+      operationId: getSubjects
+      tags:
+        - subject
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Sorting'
+        - $ref: '#/components/parameters/Filtering'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectsResponse'
+        '400':
+          $ref: '#/components/responses/bad-request-v1'
+        '401':
+          $ref: '#/components/responses/unauthorized-v1'
+        '403':
+          $ref: '#/components/responses/forbidden-v1'
+        '404':
+          $ref: '#/components/responses/not-found-v1'
+        '500':
+          $ref: '#/components/responses/internal-error-v1'
+  /api/rest/extern/v1/subjects/{subjectId}:
+    get:
+      summary: get a subject
+      operationId: getSubjectById
+      tags:
+        - subject
+      parameters:
+        - in: path
+          name: subjectId
+          required: true
+          description: The extern id of the subject to retrieve
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternSubjectDto'
+        '400':
+          $ref: '#/components/responses/bad-request-v1'
+        '401':
+          $ref: '#/components/responses/unauthorized-v1'
+        '403':
+          $ref: '#/components/responses/forbidden-v1'
+        '404':
+          $ref: '#/components/responses/not-found-v1'
+        '500':
+          $ref: '#/components/responses/internal-error-v1'
+components:
+  schemas:
+    Page:
+      type: object
+      properties:
+        limit:
+          type: integer
+          format: int32
+          default: 100
+        offset:
+          type: integer
+          format: int32
+    SortingOrder:
+      enum:
+        - ASC
+        - DESC
+    Sorting:
+      type: object
+      properties:
+        sort:
+          type: string
+          default: id
+        orderBy:
+          $ref: '#/components/schemas/SortingOrder'
+          default: ASC
+    ReadableSubjectTypeRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          nullable: false
+          format: int64
+          description: Internal WebUntis ID, unique
+        externKey:
+          type: string
+          nullable: true
+          pattern: ^[^<>|\[\]{}]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the subject type
+        shortName:
+          type: string
+          nullable: false
+          pattern: ^[^<>|\[\]{}]+$
+          minLength: 1
+          maxLength: 20
+          description: Short name of the subject type, unique
+        longName:
+          type: string
+          nullable: false
+          pattern: ^[^<>|\[\]{}]+$
+          minLength: 1
+          maxLength: 100
+          description: Long name of the subject type
+    ReadableTeachingQualificationRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          nullable: false
+          format: int64
+        externKey:
+          type: string
+          nullable: true
+          pattern: ^[^<>|\[\]]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the teaching qualification
+        shortName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 20
+          pattern: ^[^<>|\[\]{}]+$
+          description: Short name of the teaching qualification
+        longName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 255
+          pattern: ^[^<>|\[\]{}]+$
+          description: Long name of the teaching qualification
+    ReadableDepartmentRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          nullable: false
+          format: int64
+        externKey:
+          type: string
+          nullable: true
+          pattern: ^[^<>|\[\]]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the department
+        shortName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 30
+          pattern: ^[^<>|\[\]{}]+$
+          description: Short name of the department
+        longName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+          pattern: ^[^<>|\[\]{}]+$
+          description: Long name of the department
+    ReadableSubjectGroupRef:
+      type: object
+      description: Assigned subject group
+      properties:
+        id:
+          type: integer
+          nullable: false
+          format: int64
+          description: Internal WebUntis ID, unique
+        shortName:
+          type: string
+          nullable: false
+          pattern: ^[^<>|\[\]{}]+$
+          minLength: 1
+          maxLength: 20
+          description: Short name of the subject group, unique
+        longname:
+          type: string
+          nullable: false
+          pattern: ^[^<>|\[\]{}]+$
+          minLength: 1
+          maxLength: 100
+          description: Long name of the subject group
+    ExternSubjectDto:
+      type: object
+      description: External Subject Data Transfer Object
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: false
+          description: Internal WebUntis ID, unique
+        externKey:
+          type: string
+          nullable: true
+          pattern: ^[^<>|\[\]{}]+$
+          minLength: 1
+          maxLength: 100
+          description: External identifier of the subject
+        dateLastModified:
+          type: string
+          nullable: false
+          format: date-time
+          description: Last modification date of the subject
+        shortname:
+          type: string
+          nullable: false
+          minLength: 1
+          maxLength: 20
+          pattern: ^[^<>|\[\]{}]+$
+          description: Short name of the subject, unique
+        longName:
+          type: string
+          nullable: false
+          minLength: 1
+          maxLength: 100
+          pattern: ^[^<>|\[\]{}]+$
+          description: Long name of the subject
+        alternateName:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 30
+          pattern: ^[^<>|\[\]{}]+$
+          description: Subject alternate name
+        active:
+          type: boolean
+          nullable: false
+        text:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 255
+          pattern: ^[^<>|\[\]{}]+$
+          description: Free text attribute
+        absenceCheck:
+          type: boolean
+          nullable: false
+        teachingContentIsCompulsory:
+          type: boolean
+          nullable: false
+        codes:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 30
+          pattern: ^[^<>|\[\]{}]+$
+          description: Subject codes from Untis
+        subjectType:
+          $ref: '#/components/schemas/ReadableSubjectTypeRef'
+        teachingQualifications:
+          type: array
+          description: List of assigned teaching qualifications
+          items:
+            $ref: '#/components/schemas/ReadableTeachingQualificationRef'
+        departments:
+          type: array
+          description: List of assigned departments
+          items:
+            $ref: '#/components/schemas/ReadableDepartmentRef'
+        subjectGroups:
+          type: array
+          description: List of assigned subject groups
+          items:
+            $ref: '#/components/schemas/ReadableSubjectGroupRef'
+    Subjects:
+      type: array
+      items:
+        $ref: '#/components/schemas/ExternSubjectDto'
+    SubjectsResponse:
+      type: object
+      x-no-field-selection: true
+      required:
+        - subjects
+      properties:
+        subjects:
+          $ref: '#/components/schemas/Subjects'
+    ErrorCode:
+      type: string
+      enum:
+        - INTERNAL_ERROR
+        - MASTER_DATA_NOT_FOUND
+        - VALIDATION_ERROR
+        - ENTITY_EXPIRED
+        - MESSAGING_GROUP_CALCULATION_ERROR
+        - MESSAGING_READ_CONFIRMATION_ALREADY_CONFIRMED
+        - NOT_FOUND
+        - FORBIDDEN
+        - TT_ONGOING_TIMETABLE_PUBLICATION
+        - TT_UNRESOLVED_CHANGESET
+        - TENANT_INSTALLATION_RECOVERABLE_ERROR
+        - BAD_REQUEST
+        - PW_CHANGE_RULE_VIOLATION
+    ErrorData:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        externKey:
+          type: string
+    ValidationError:
+      type: object
+      required:
+        - path
+        - errorMessage
+      properties:
+        errorKey:
+          type: string
+          enum:
+            - field.mustBeMin
+            - field.mustBeMax
+            - field.mustBeNull
+            - field.mustNotBeNull
+            - field.mustNotBeEmpty
+            - field.mustNotBeBlank
+            - field.sizeInvalid
+            - field.digitsMustMatch
+            - field.mustBeEmail
+            - field.mustBeFuture
+            - field.mustBeFutureOrPresent
+            - field.mustBePast
+            - field.mustBePastOrPresent
+            - field.mustBePositive
+            - field.mustBePositiveOrZero
+            - field.mustBeNegative
+            - field.mustBeNegativeOrZero
+            - field.mustMatchPattern
+            - value.mustHaveIdentity
+            - value.mustBeBefore
+            - value.mustBeAfter
+            - value.alreadyExists
+            - value.mustBeUnique
+            - value.other
+            - value.mustBeIsoCountryCode
+            - entity.notFound
+            - entity.duplicateFound
+            - entity.other
+        path:
+          type: string
+        constraintValue:
+          type: string
+        errorMessage:
+          type: string
+        index:
+          type: integer
+          description: Index of the dto which failed validation in a bulk operation. Count starts from 0.
+        errorData:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorData'
+    ValidationErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - requestId
+        - traceId
+        - validationErrors
+      properties:
+        errorCode:
+          $ref: '#/components/schemas/ErrorCode'
+        requestId:
+          type: string
+        traceId:
+          type: string
+        validationErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    ErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+        - requestId
+        - traceId
+      properties:
+        errorCode:
+          $ref: '#/components/schemas/ErrorCode'
+        errorMessage:
+          type: string
+        requestId:
+          type: string
+        traceId:
+          type: string
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: Page - contains values for limit and offset.
+      required: true
+      schema:
+        $ref: '#/components/schemas/Page'
+    Sorting:
+      name: sorting
+      in: query
+      description: Sorting - contains values for sort and orderby.
+      required: true
+      schema:
+        $ref: '#/components/schemas/Sorting'
+    Filtering:
+      name: filter
+      in: query
+      description: Filter - the filter query e.g. <data field><predicate><value>.
+      required: false
+      schema:
+        type: string
+  responses:
+    bad-request-v1:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+    unauthorized-v1:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    forbidden-v1:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    not-found-v1:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+    internal-error-v1:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
