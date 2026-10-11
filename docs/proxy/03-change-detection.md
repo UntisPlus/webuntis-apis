@@ -33,7 +33,9 @@ immediately then on every tick. Each pass:
 2. Calls `pollOnce` → `checkClassErr` for each class.
 3. `checkClassErr` fetches the class timetable for a window of **yesterday …
    +4 days** (`-1`/`+4` days) and builds a normalized snapshot row per period
-   (`periodId`, start, end, subject, room, teacher, description).
+   (`PeriodID`, `Kind`, `Start`, `End`, `Subject`, `Room`, `Teacher`,
+   `Description`, `ModVer` — the Go struct has no JSON tags, so the wire form is
+   the exported field names, i.e. PascalCase).
 4. Opens the snapshot transaction, which compares rows against the stored
    snapshot, drafts add/change/remove rows, bumps the class version, and
    **enqueues one outbox row per matching destination inside the same
@@ -79,9 +81,9 @@ Session required; the viewer may only ask for **their own class** (omit
     "added": 1,
     "removed": 0
   },
-  "changes": [ { "kind": "ADDED", "periodId": 9001, "start": "...",
-                 "end": "...", "subject": "Mathe", "room": "R112",
-                 "teacher": "Müller", "description": "" } ]
+  "changes": [ { "PeriodID": 9001, "Kind": "ADDED", "Start": "...",
+                 "End": "...", "Subject": "Mathe", "Room": "R112",
+                 "Teacher": "Müller", "Description": "", "ModVer": 4 } ]
 }
 ```
 
@@ -105,7 +107,7 @@ student-event changes. Standard **Server-Sent Events**; heartbeat comment every
 ```
 event: snapshot
 data: {"event":"snapshot","school":"testschool","classId":5000,
-       "version":43,"changes":[...]}
+       "current":43,"changes":[...],"eventVersion":7}
 
 event: change
 data: {"event":"change","school":"testschool","classId":5000,
@@ -159,4 +161,5 @@ what powers diffs. Rows older than **today** are dropped on each successful poll
 ## Related
 
 - Delivery mechanics (outbox, retries, signatures): [04](04-notifications.md).
-- `untisctl` can force a full re-scan: [`perms`/`recon` commands](10-untisctl.md).
+- A full re-scan can be forced from the admin API:
+  `POST /admin/recon/rescan` ([08](08-admin-api.md)).
