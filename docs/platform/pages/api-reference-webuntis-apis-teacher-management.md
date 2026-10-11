@@ -10,9 +10,7 @@ Manage teacher master-data and user accounts. Returns all teachers regardless of
 
 v2  Read & Write   **Endpoints:** 4
 
-Tip
-
-v1 is **deprecated**. Use v2 for all new integrations.
+**Tip:** v1 is **deprecated**. Use v2 for all new integrations.
 
 ---
 

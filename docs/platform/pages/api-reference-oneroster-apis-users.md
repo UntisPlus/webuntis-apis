@@ -10,9 +10,7 @@ The Users entity provides access to student, teacher, and other user profiles. Y
 
 OneRoster 1.1  Read-only   **Endpoints:** 10
 
-Note
-
-OneRoster only returns users who have **assigned user accounts**. Students and
+**Note:** OneRoster only returns users who have **assigned user accounts**. Students and
 teachers without user accounts are not included. For complete master-data, use
 the [Untis Platform APIs](api-reference-webuntis-apis.md).
 
@@ -231,9 +229,7 @@ OneRosterResponse<UserDto> teachers = client.list(
     "role='teacher'", "familyName", 100, 0);
 ```
 
-Note
-
-The `envelope` parameter must match the response wrapper key — e.g. `users`, `students`, `teachers`.
+**Note:** The `envelope` parameter must match the response wrapper key — e.g. `users`, `students`, `teachers`.
 
 ---
 

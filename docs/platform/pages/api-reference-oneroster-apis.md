@@ -8,9 +8,7 @@
 
 Untis Platform implements the **IMS Global OneRoster v1.1** specification, giving integration partners standards-based, read-only access to organizational and enrollment data. If your platform already speaks OneRoster, you can consume Untis Platform roster information without learning proprietary data structures.
 
-Tip
-
-OneRoster APIs are **read-only** and return only entities with **assigned user
+**Tip:** OneRoster APIs are **read-only** and return only entities with **assigned user
 accounts**. If you need write access or complete master-data, see the [Untis
 Platform APIs](api-reference-webuntis-apis.md).
 

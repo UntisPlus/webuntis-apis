@@ -10,9 +10,7 @@ Access real-time timetable data including scheduled lessons, substitutions, canc
 
 v3  Read-only   **Endpoints:** 3 (across versions)
 
-Tip
-
-v2 and v1 are still available but **v3 is recommended** for all new
+**Tip:** v2 and v1 are still available but **v3 is recommended** for all new
 integrations.
 
 ---
@@ -49,9 +47,7 @@ Show real-time substitutions, cancellations, and room changes.
 | **Change status** | All periods or only changed periods |
 | **Timetable source** | Scheduled timetable from planning or real-time data |
 
-Tip
-
-Prefer **`dateLastModifiedAfter`** over a fixed date range for incremental
+**Tip:** Prefer **`dateLastModifiedAfter`** over a fixed date range for incremental
 sync. It returns only what has changed since your last call, keeping responses
 small and avoiding a full timetable reload on every poll. Use a fixed date
 range (start/end) when you need to load a specific window for the first time
@@ -188,9 +184,7 @@ UntisApiClient.TimetableResponse delta =
     client.getTimetable(LocalDate.of(2025, 9, 1), LocalDate.of(2025, 9, 30), Instant.parse("2025-09-15T08:00:00Z"));
 ```
 
-Tip
-
-For regular polling, always pass `dateLastModifiedAfter` to receive only what has changed. Advance this value only after both the timetable call and the [deleted-periods call](#detecting-deleted-periods) succeed.
+**Tip:** For regular polling, always pass `dateLastModifiedAfter` to receive only what has changed. Advance this value only after both the timetable call and the [deleted-periods call](#detecting-deleted-periods) succeed.
 
 ---
 

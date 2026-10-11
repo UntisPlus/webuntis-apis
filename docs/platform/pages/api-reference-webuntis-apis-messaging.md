@@ -10,9 +10,7 @@ Send messages to Untis Platform users — either as the platform app itself (usi
 
 v1  Send-only   **Endpoints:** 1
 
-Note
-
-This API **only sends** messages. Message retrieval and inbox access are not
+**Note:** This API **only sends** messages. Message retrieval and inbox access are not
 supported.
 
 ---

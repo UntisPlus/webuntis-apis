@@ -51,9 +51,7 @@ We strongly recommend providing these endpoints to enable automatic processes. S
 | **Deactivation-Path** | `/deactivate` | Notifies your app when it is deactivated or deleted. |
 | **SSO-Redirect-Path** | `/login/oauth2/code/{TENANT_ID}` | Required for OIDC Authorization Code flow. |
 
-Note
-
-Credentials must be stored per school. See [Credential Transfer](getting-started-overview.md) in the overview for how this works.
+**Note:** Credentials must be stored per school. See [Credential Transfer](getting-started-overview.md) in the overview for how this works.
 
 **Menu placement** — where your application appears:
 

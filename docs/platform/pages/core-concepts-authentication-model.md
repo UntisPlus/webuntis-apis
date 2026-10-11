@@ -119,9 +119,7 @@ public class OneRosterClient {
 }
 ```
 
-Caution
-
-Use the **platform-generated password** (not the OIDC client secret) as the credential. Tokens are valid for **3 minutes** — check `expires_in` in the response and cache the token to avoid unnecessary requests.
+**Caution:** Use the **platform-generated password** (not the OIDC client secret) as the credential. Tokens are valid for **3 minutes** — check `expires_in` in the response and cache the token to avoid unnecessary requests.
 
 ---
 

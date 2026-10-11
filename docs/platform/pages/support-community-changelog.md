@@ -8,7 +8,7 @@
 
 All notable changes to the Untis Platform integration APIs, authorization endpoints, and platform features are documented here in reverse chronological order.
 
-Tip
+**Tip:**
 
 **Subscribe to the RSS feed** to get notified whenever a new entry is added to
 this changelog. Point your RSS reader or CI pipeline to:
@@ -23,9 +23,7 @@ have an RSS reader set up, consider using a service such as
 Slack RSS integration to route feed updates directly into your team’s
 workflow.
 
-Note
-
-Dates in the **Release date** column indicate when the change became available
+**Note:** Dates in the **Release date** column indicate when the change became available
 on production. A dash means the change was documentation-only.
 
 | Change date | Release date | Description |

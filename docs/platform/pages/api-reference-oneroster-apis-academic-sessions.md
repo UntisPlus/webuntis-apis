@@ -12,9 +12,7 @@ OneRoster 1.1  Read-only   **Endpoints:** 2
 
 ---
 
-Note
-
-Currently, only the `schoolYear` session type is supported.
+**Note:** Currently, only the `schoolYear` session type is supported.
 
 ---
 

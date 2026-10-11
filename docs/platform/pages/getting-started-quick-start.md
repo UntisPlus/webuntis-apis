@@ -66,7 +66,7 @@ Your web app is embedded in the Untis Platform with no SSO or data exchange. Rar
 
 ## Stay informed
 
-Tip
+**Tip:**
 
 **Subscribe to the RSS feed** to get notified whenever the changelog is
 updated with new API changes, features, or deprecations. Point your RSS reader

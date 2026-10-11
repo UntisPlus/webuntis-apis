@@ -35,16 +35,18 @@ it possible:
 |---|---|---|
 | WebUntis JSON-RPC API (2018-09-20) | 🟡 authored by Untis GmbH | rendered as [04 — Public JSON-RPC](04-jsonrpc-public.md) |
 | External Timetable API v1/v2/v3 | 🟢 Untis GmbH | [`specs/untis-extern/`](../specs/untis-extern) |
+| Untis Platform APIs (15 OpenAPI docs) | 🟢 Untis GmbH | [`specs/untis-platform/`](../specs/untis-platform) + [platform docs mirror](platform/README.md) |
 | Untis Mobile / REST (intern) | 🔴 BetterUntis | [`specs/untis-intern/`](../specs/untis-intern) |
 
 ## Getting credentials
 
 The official API keys, SSO clients and platform passwords are issued by Untis
-GmbH through its developer portal (developer.untis.com). That portal is the only
-part of this stack that is not (and cannot be) mirrored here — you need an
-account there to call the official Platform and Timetable APIs in production.
-Everything about *how* those APIs behave is documented locally in
-[10 — Platform API](10-platform-api.md) and
+GmbH through its developer portal (developer.untis.com). The portal's
+*documentation* is mirrored locally here (see
+[`platform/`](platform/README.md)), but account sign-up and credential issuance
+are the one thing that cannot be — you need an account there to call the official
+Platform and Timetable APIs in production. Everything about *how* those APIs
+behave is documented locally in [10 — Platform API](10-platform-api.md) and
 [09 — Timetable API v3](09-extern-timetable-v3.md).
 
 ## See also

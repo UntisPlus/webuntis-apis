@@ -40,9 +40,7 @@ These APIs all define the same HTTP error status set and the same two reusable e
 
 #### `ErrorResponse`
 
-Tip
-
-Use the `errorCode` field for programmatic error handling and the `requestId`
+**Tip:** Use the `errorCode` field for programmatic error handling and the `requestId`
 / `traceId` when contacting support.
 
 | Field | Description |

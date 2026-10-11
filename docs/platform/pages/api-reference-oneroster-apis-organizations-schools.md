@@ -21,9 +21,7 @@ OneRoster 1.1  Read-only   **Endpoints:** 4 (2 unique + 2 aliases)
 | `getAllSchools` | `{{API_URL}}ims/oneroster/v1p1/schools` | Same as `getAllOrgs` |
 | `getSchool` | `{{API_URL}}ims/oneroster/v1p1/schools/{{id}}` | Same as `getOrg` |
 
-Tip
-
-Use `/schools` if your integration expects school-level entities, or `/orgs`
+**Tip:** Use `/schools` if your integration expects school-level entities, or `/orgs`
 for consistency with OneRoster terminology. Both return the same data.
 
 ---
@@ -44,9 +42,7 @@ Organizations are referenced throughout the OneRoster data model:
 | **Classes** | `class.school` references the school where the class is taught |
 | **Enrollments** | `enrollment.school` links the enrollment to a school context |
 
-Note
-
-Users are typically associated with a **single school**. Multi-school
+**Note:** Users are typically associated with a **single school**. Multi-school
 scenarios are not currently supported in Untis Platform.
 
 ---

@@ -36,13 +36,15 @@ learn or use these APIs:
 - **`docs/`** — the prose reference, one page per API family (start at
   [00 — Getting started](docs/00-getting-started.md) if you're new).
 - **`docs/platform/`** — a full offline mirror of the official Untis developer
-  documentation (all Platform resource APIs, OneRoster, webhooks, guides).
-- **`specs/`** — the machine-readable OpenAPI documents (intern + extern),
-  vendored locally with attribution. See [`specs/README.md`](specs/README.md).
+  documentation (all Platform resource APIs, OneRoster, webhooks, guides). See
+  [`docs/platform/README.md`](docs/platform/README.md).
+- **`specs/`** — the machine-readable OpenAPI documents (intern, extern and all
+  15 Platform APIs), vendored locally with attribution. See
+  [`specs/README.md`](specs/README.md).
 - **`examples/`** — runnable Python and `curl` scripts for every surface, with a
   shared helper library. See [`examples/README.md`](examples/README.md).
 - **`samples/`** — saved request/response payloads so you can see real shapes
-  without touching a school server.
+  without touching a school server. See [`samples/README.md`](samples/README.md).
 
 ## Documentation index
 
@@ -66,8 +68,9 @@ learn or use these APIs:
 
 The machine-readable companions to the prose docs are **included in this
 repository** under [`specs/`](specs/README.md): the reverse-engineered intern
-specs (`untis-mobile.yaml`, `untis-rest.yaml`) and the external Timetable API
-(Untis GmbH) with its error schemas. See [`specs/README.md`](specs/README.md)
+specs (`untis-mobile.yaml`, `untis-rest.yaml`), the external Timetable API
+(Untis GmbH) with its error schemas, and the complete OpenAPI documents for all
+15 Untis **Platform** APIs. See [`specs/README.md`](specs/README.md)
 for the index, [`NOTICE.md`](NOTICE.md) for attribution and licenses.
 
 ## Examples

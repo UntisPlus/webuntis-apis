@@ -10,9 +10,7 @@ SSO integration provides a “one login” experience: when a user opens your ap
 
 SSO is always used together with [UI Integration](integration-guides-ui-integration.md). UI integration defines the entry point (where your app is launched from); SSO handles authentication when the user arrives.
 
-Note
-
-Only v3 of the auth endpoints is supported. v1 and v2 are deprecated and have been shut down.
+**Note:** Only v3 of the auth endpoints is supported. v1 and v2 are deprecated and have been shut down.
 
 ## When SSO is required
 
@@ -180,13 +178,11 @@ grant_type=authorization_code
 - Missing/invalid `code_verifier` at the token endpoint results in `invalid_grant`.
 - For public clients, omitting PKCE in the authorize request results in `invalid_request`.
 
-Caution
+**Caution:**
 
 - Treat `code_verifier` as sensitive data. Do not log it and do not persist it longer than necessary.
 
-Note
-
-You can discover PKCE capabilities for a tenant using the well-known configuration’s `code_challenge_methods_supported` field. See [Discovering endpoint URLs (well-known configuration)](#discovering-endpoint-urls-well-known-configuration).
+**Note:** You can discover PKCE capabilities for a tenant using the well-known configuration’s `code_challenge_methods_supported` field. See [Discovering endpoint URLs (well-known configuration)](#discovering-endpoint-urls-well-known-configuration).
 
 ## Configuration dependencies
 
@@ -278,9 +274,7 @@ The `id_token` returned from the token endpoint is a JWT. Which claims it contai
 | `sr` | School region — the region (Bundesland) the school is located in (e.g. `AT-3`). |
 | `sn` | School name. |
 
-Note
-
-The token also contains a small number of additional claims (e.g. `route`, `host`, `per`) that are reserved for internal platform use. They are not documented here, may change without notice, and must not be read or relied upon by integrations.
+**Note:** The token also contains a small number of additional claims (e.g. `route`, `host`, `per`) that are reserved for internal platform use. They are not documented here, may change without notice, and must not be read or relied upon by integrations.
 
 ### Profile claims (only present with the `untis-profile` scope)
 
@@ -292,9 +286,7 @@ The token also contains a small number of additional claims (e.g. `route`, `host
 | `gender` | e.g. `MALE`, `FEMALE` |
 | `birthdate` | Date of birth as a Unix epoch timestamp. Can hold implausible values (e.g. a large negative number resolving to year `0000`) when no birthdate is on file — treat such values as “not set” rather than a real date. |
 
-Caution
-
-Do not request the `untis-profile` scope for new integrations — as noted in [Step 1](#step-1--call-the-authorize-endpoint) above, it is not backwards-compatible and these claims may change without notice. Use `sub` together with the [OneRoster users endpoint](api-reference-oneroster-apis-users.md) to retrieve user details instead.
+**Caution:** Do not request the `untis-profile` scope for new integrations — as noted in [Step 1](#step-1--call-the-authorize-endpoint) above, it is not backwards-compatible and these claims may change without notice. Use `sub` together with the [OneRoster users endpoint](api-reference-oneroster-apis-users.md) to retrieve user details instead.
 
 ## The `locale` claim
 
@@ -304,9 +296,7 @@ The ID token’s `locale` claim identifies the user’s language in WebUntis. It
 - For standard languages, the claim contains only the language subtag (e.g. `de`) — not a full locale with region (e.g. not `de-AT`), though the value is still valid per the locale standard.
 - Because only the language subtag is returned, there is no separator in practice. If a region were ever included, the expected separator would be a dash (`-`), not an underscore.
 
-Caution
-
-WebUntis also supports **custom languages**. For these, the `locale` claim does not contain a valid language subtag — it returns an internal WebUntis code instead. Known custom languages and their `locale` values:
+**Caution:** WebUntis also supports **custom languages**. For these, the `locale` claim does not contain a valid language subtag — it returns an internal WebUntis code instead. Known custom languages and their `locale` values:
 
 | WebUntis language | `locale` value |
 | --- | --- |
@@ -345,9 +335,7 @@ public class OidcDiscoveryClient {
 }
 ```
 
-Note
-
-Use the discovered `authorization_endpoint` and `token_endpoint` values rather than constructing URLs manually. This makes your integration resilient to infrastructure changes.
+**Note:** Use the discovered `authorization_endpoint` and `token_endpoint` values rather than constructing URLs manually. This makes your integration resilient to infrastructure changes.
 
 ### Build the authorization request and exchange the code
 
@@ -418,13 +406,9 @@ class TokenExchangeClient {
 }
 ```
 
-Note
+**Note:** Use `OidcAuthorizationClient.generateSecureString()` for both `state` and `nonce` — store them in the user’s session so you can verify `state` on the redirect callback and `nonce` inside the JWT (next step). Pass the `tokenEndpoint` value returned by the discovery call above.
 
-Use `OidcAuthorizationClient.generateSecureString()` for both `state` and `nonce` — store them in the user’s session so you can verify `state` on the redirect callback and `nonce` inside the JWT (next step). Pass the `tokenEndpoint` value returned by the discovery call above.
-
-Caution
-
-Use the **OIDC client secret** in the form body — not the platform-generated password. The platform-generated password is only used for the Client Credentials flow.
+**Caution:** Use the **OIDC client secret** in the form body — not the platform-generated password. The platform-generated password is only used for the Client Credentials flow.
 
 ### Parse and validate the ID token
 
@@ -479,7 +463,7 @@ public class IdTokenParser {
 }
 ```
 
-Note
+**Note:**
 
 `sub` is the only claim you should use to identify a user. Do not use the `untis-profile` scope or rely on name/email claims — those are not guaranteed stable. Call the [OneRoster users endpoint](api-reference-oneroster-apis-users.md) with the `sub` value to retrieve full user details.
 

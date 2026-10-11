@@ -27,9 +27,7 @@ The OIDC client secret and the platform-generated password are not interchangeab
 
 For the Client Credentials flow, use the **password** delivered to your endpoint via the [Credentials Webhook](integration-guides-webhooks-credentials.md), not the OIDC client secret.
 
-Caution
-
-The OIDC client secret is only valid for the Authorization Code flow. Using it
+**Caution:** The OIDC client secret is only valid for the Authorization Code flow. Using it
 in a Client Credentials request will always result in `invalid_grant`.
 
 ---
@@ -46,9 +44,7 @@ The credentials delivered via the [Credentials Webhook](integration-guides-webho
 
 Add a short delay (1-2 seconds is generally sufficient) after receiving the credentials webhook before making the first token request. See the [Activation process - Timing note](integration-guides-webhooks-credentials.md) for details.
 
-Caution
-
-This same timing issue can resurface mid-sync: if a school administrator
+**Caution:** This same timing issue can resurface mid-sync: if a school administrator
 deactivates the application while an initial data sync is still running, the
 next token refresh will also fail with `401`. Since [token lifetime is only
 3 minutes](core-concepts-authentication-model.md), a large initial sync should
@@ -85,9 +81,7 @@ If a partner application skips the authentication flow when a session already ex
 
 Treat every incoming request to your Login URL as the start of a new authentication flow. If your application already has an active session, terminate it and re-initiate the OIDC Authorization Code flow before establishing the new session. This ensures that the user authenticated in your application always matches the user who launched it from the Untis Platform.
 
-Note
-
-This is particularly important in shared-device environments, such as schools
+**Note:** This is particularly important in shared-device environments, such as schools
 where multiple users may use the same browser on the same device.
 
 ---
@@ -156,7 +150,5 @@ Classes are identified hierarchically by `id`, `externKey`, and `shortName`, in 
 
 When updating classes that may not belong to the current school year (for example, right after a school year has ended), identify the class using `id` or `externKey` only, and omit `shortName` from the request.
 
-Note
-
-Once a new school year is activated, `shortName` resolves normally again,
+**Note:** Once a new school year is activated, `shortName` resolves normally again,
 including for classes carried over from a prior school year.

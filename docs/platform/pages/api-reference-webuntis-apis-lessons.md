@@ -10,9 +10,7 @@ Read-only access to lesson data and associated student information. Unlike OneRo
 
 v1  Read-only   **Endpoints:** 1
 
-Tip
-
-If you only need students **with** user accounts, the [Classes
+**Tip:** If you only need students **with** user accounts, the [Classes
 (OneRoster)](api-reference-oneroster-apis-classes.md) endpoint may be simpler.
 Use this API when you need the **complete** student list.
 

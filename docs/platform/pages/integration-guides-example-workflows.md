@@ -119,8 +119,6 @@ sequenceDiagram
     PA->>PA: Store credentials
 ```
 
-Note
-
-Scenario 3 is a fallback. Implementing a [credentials webhook endpoint](integration-guides-webhooks-credentials.md) covers Scenarios 1 and 2 automatically.
+**Note:** Scenario 3 is a fallback. Implementing a [credentials webhook endpoint](integration-guides-webhooks-credentials.md) covers Scenarios 1 and 2 automatically.
 
 **Read more:** [Get Your Platform Application](getting-started-get-platform-application.md) · [Credentials Webhook](integration-guides-webhooks-credentials.md) · [Deactivation Webhook](integration-guides-webhooks-deactivation.md)

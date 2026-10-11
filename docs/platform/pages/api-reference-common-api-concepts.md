@@ -8,9 +8,7 @@
 
 Both OneRoster and Untis Platform API families share the same pagination, sorting, and filtering mechanism. Every list endpoint on the platform uses the [OneRoster 1.1 specification](https://www.imsglobal.org/oneroster-v11-final-specification#_Toc480451995) for these operations — regardless of which API family you call.
 
-Caution
-
-Pagination is **mandatory** for client-side implementation. Even if an
+**Caution:** Pagination is **mandatory** for client-side implementation. Even if an
 endpoint could return all results in a single response, you must implement
 pagination to handle growth in data volume over time.
 

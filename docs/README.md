@@ -23,8 +23,10 @@ siblings.
 
 > **Official platform docs:** the complete Untis developer documentation is
 > mirrored locally under [`platform/`](platform/README.md) — API reference for
-> every resource, OneRoster, webhooks and integration guides.| [11 — Formats & conventions](11-conventions.md) | Dates, times, element types, error codes |
-| [12 — Credits](12-reference-clients.md) | Prior art, specs used, getting credentials |
+> every resource, OneRoster, webhooks and integration guides.
+>
+> **Machine-readable schemas:** the full OpenAPI documents for all 15 Platform
+> APIs are in [`../specs/untis-platform/`](../specs/untis-platform/README.md).
 
 > **Provenance legend**
 > - 🟢 **Official** — published/operated by Untis GmbH.

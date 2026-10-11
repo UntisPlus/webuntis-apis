@@ -28,8 +28,12 @@ CC BY 4.0 license. If you redistribute them, keep this notice and the GPL text.
   documentation published by Untis GmbH (© Untis GmbH). It is included for
   interoperability and educational use; see
   [`specs/untis-extern/NOTICE.md`](specs/untis-extern/NOTICE.md).
-- All product names, product names, logos and brands (WebUntis, Untis) are the
-  property of Untis GmbH.
+- `specs/untis-platform/` (the OpenAPI documents for the Untis Platform APIs)
+  and the mirrored developer documentation under `docs/platform/` are © Untis
+  GmbH. They are reproduced for interoperability and reference; the original
+  source is the official developer portal (developer.untis.com).
+- All product names, logos and brands (WebUntis, Untis) are the property of
+  Untis GmbH.
 
 ## No warranty
 

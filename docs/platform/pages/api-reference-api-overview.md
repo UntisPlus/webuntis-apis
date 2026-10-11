@@ -43,9 +43,7 @@ Production
 
 Live school data. Requires an approved platform application. Production-level SLAs and stricter rate limits.
 
-Caution
-
-Never use production for development or experimentation. Test in the integration environment first!
+**Caution:** Never use production for development or experimentation. Test in the integration environment first!
 
 ---
 
@@ -53,9 +51,7 @@ Never use production for development or experimentation. Test in the integration
 
 Our platform operates on the basis of the fair use principle. All requests made by every platform app are actively monitored.
 
-Note
-
-Nevertheless, there are strict limits:
+**Note:** Nevertheless, there are strict limits:
 Your app may send a **maximum of 40 requests per second**.
 
 Furthermore, larger synchronisation jobs must be scheduled for off-peak hours. This means Monday to Friday between 7.00 pm and 5.00 am, or at weekends.
@@ -72,9 +68,7 @@ Every API reference page in these docs includes a live **Try it out** button on 
 - Responses reflect real API behavior since the integration environment mirrors production.
 - The sandbox client has **read-only permissions** — data cannot be modified.
 
-Note
-
-Write operations (POST, PUT, DELETE) will be rejected by the sandbox school’s
+**Note:** Write operations (POST, PUT, DELETE) will be rejected by the sandbox school’s
 permission scope. To test write flows, use your own integration tenant with
 your own credentials.
 

@@ -10,9 +10,7 @@ Manage student master-data including class assignments and user accounts. Unlike
 
 v3  Read & Write   **Endpoints:** 4
 
-Tip
-
-v1 and v2 are **deprecated**. Use v3 for all new integrations.
+**Tip:** v1 and v2 are **deprecated**. Use v3 for all new integrations.
 
 ---
 
@@ -44,9 +42,7 @@ Create student records and manage user accounts in bulk.
 In webuntis, schools can define their own attributes for the student master data.  
 These can also be managed via the Student API. They are included as key-value pairs in `studentAttributes`.
 
-Note
-
-It is important to note, however, that these are optional. In other words, each school can have its own attributes.
+**Note:** It is important to note, however, that these are optional. In other words, each school can have its own attributes.
 
 ---
 
@@ -116,9 +112,7 @@ response.students().forEach(s ->
     System.out.println(s.forename() + " " + s.lastName()));
 ```
 
-Note
-
-Unlike the [OneRoster users endpoint](api-reference-oneroster-apis-users.md), this API returns **all students** regardless of whether they have an assigned user account.
+**Note:** Unlike the [OneRoster users endpoint](api-reference-oneroster-apis-users.md), this API returns **all students** regardless of whether they have an assigned user account.
 
 ---
 

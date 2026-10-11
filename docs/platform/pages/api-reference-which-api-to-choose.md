@@ -28,9 +28,7 @@ Proprietary APIs with **read and write** access to master-data and platform-spec
 
 **Best for:** School management systems, admin tools, bidirectional sync.
 
-Note
-
-A student who exists in master-data but has no assigned user account will
+**Note:** A student who exists in master-data but has no assigned user account will
 appear in Untis Platform API responses but **will not** appear in OneRoster.
 
 ---

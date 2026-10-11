@@ -16,9 +16,7 @@ A **Class** in Untis Platform (an organizational student group) is **not** the
 same as a **class** in OneRoster (which represents a lesson). See [Classes
 (OneRoster)](api-reference-oneroster-apis-classes.md) for details.
 
-Tip
-
-v1 is **deprecated**. Use v2 for all new integrations.
+**Tip:** v1 is **deprecated**. Use v2 for all new integrations.
 
 ---
 
