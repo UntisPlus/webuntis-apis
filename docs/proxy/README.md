@@ -40,7 +40,7 @@ WebUntis APIs it forwards are documented in [`../`](../README.md).
 | [02 — HTTP endpoint reference](02-endpoints.md) | Every route, method, auth and response |
 | [03 — Change detection](03-change-detection.md) | `/api/timetable/changes`, `/api/timetable/stream`, the digest |
 | [04 — Notifications](04-notifications.md) | Webhooks, ntfy, the durable outbox, signatures |
-| [05 — Calendar subscriptions](05-calendar.md) | `/api/calendar/token`, the `.ics` feed, `/week/{token}` |
+| [05 — Calendar subscriptions](05-calendar.md) | `/api/calendar/token`, `options`/`tokens`, the `.ics` feed, `/week/{token}` |
 | [06 — Homework & absences](06-homework-and-absences.md) | `done` flags, notes, the `derived` block |
 | [07 — Student events (Technik)](07-student-events.md) | Custom events, event absences, room map, import |
 | [08 — Admin API](08-admin-api.md) | `/admin` dashboard and its JSON endpoints |

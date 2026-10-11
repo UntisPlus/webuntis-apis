@@ -127,10 +127,14 @@ outbox detail needs an admin session or the gated metrics listener.
 
 ## Self-service subscriptions
 
-Session required; a plain user may only touch their **own class** and, for ntfy,
-their **own student** target. `editor`/`boosted`/admin may also touch any pooled
-class and school-wide (`classId 0`) subscriptions. Created rows remember
-`createdBy`, and only the creator (or a privileged user) may test/delete them.
+Session required. The target vocabulary is the calendar mint's: a class (your
+own always), your personal/student target, a teacher/room/subject (recon,
+`boosted` or staff), or school-wide (privileged only). `GET
+/api/notifications/options` returns exactly what the caller may watch — the same
+catalog as `/api/calendar/options`, minus the Technik aggregate the change
+poller cannot deliver. Both `GET /api/webhooks` and `GET /api/ntfy` list only
+the caller's **own** rows. Created rows remember `createdBy`, and only the
+creator (or a privileged user) may test/delete them.
 
 `GET /api/webhooks`, `POST /api/webhooks`, `DELETE /api/webhooks/{id}`,
 `POST /api/webhooks/{id}/test`, and the parallel `/api/ntfy…` routes are

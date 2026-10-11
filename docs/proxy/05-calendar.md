@@ -14,18 +14,29 @@ Session required. The body names **exactly one** target:
 
 | Body | Target | Access needed |
 |---|---|---|
-| `{"classId":5000}` | a class | class must be in the pool |
+| `{"classId":5000}` | a class | class in the pool, or `boosted`/staff |
+| `{"classId":2000000000}` | the synthetic **Technik** aggregate class | `techniker` |
 | `{"personal":true}` | your own person | — |
 | `{"personId":5006}` | your own person | must equal your person id |
-| `{"teacherId":123}` | a teacher | `recon` or `boosted` |
-| `{"roomId":456}` | a room | `recon` or `boosted` |
-| `{"subjectId":789}` | a subject | `recon` or `boosted` |
+| `{"teacherId":123}` | a teacher | `recon`, `boosted`, or staff |
+| `{"roomId":456}` | a room | `recon`, `boosted`, or staff |
+| `{"subjectId":789}` | a subject | `recon`, `boosted`, or staff |
 
 Optional: `{"timezone":"Europe/Berlin"}` (default), `{"days":30}`
 (default `30`, clamped to `365`).
 
-Minting is **idempotent per target**: asking again returns the same token
-(`ClassTokenForClass` / `ClassTokenForPerson` / `ClassTokenForElement`). Response:
+The access column mirrors the app's `masterData` visibility exactly: a plain
+student gets the pooled classes and their personal timetable; `recon` adds the
+reconstructed teachers/rooms/subjects; `boosted` and *staff* (non-student)
+accounts keep stock WebUntis visibility (every element); `techniker` adds the
+synthetic **Technik** class (`id 2000000000`, the union of every student's
+events).
+
+Minting is **idempotent per target per user**: asking again as the same user
+returns that user's token, but a token an operator minted for the element (via
+`untisctl` or `/admin/tokens`) is **never** handed to (or silently reused by) an
+app user. Each caller gets a token they own, so it shows up in their
+`GET /api/calendar/tokens` list and only they can revoke it. Response:
 
 ```json
 {"type":"class","id":5000,"name":"10b","classId":5000,
@@ -37,6 +48,47 @@ Minting is **idempotent per target**: asking again returns the same token
 
 The feed URL is always **https**, even when read over plain HTTP, because a
 subscription is meant to be pasted into a calendar client.
+
+## Discovery and self-service
+
+A client does not have to guess ids from `masterData`: the proxy exposes exactly
+the targets a user may subscribe to, and lets them manage their own tokens.
+
+```
+GET    /api/calendar/options   # what you can subscribe to
+GET    /api/calendar/tokens     # the tokens you created
+PATCH  /api/calendar/{token}    # change the lookahead window
+DELETE /api/calendar/{token}    # revoke a token
+```
+
+`GET /api/calendar/options` mirrors the `masterData` display flags the login
+rewrite sets, so it never advertises something the app would not also show:
+
+```json
+{"school":"myschool",
+ "personal":{"personId":5006,"name":"Jane Doe"},
+ "class":[{"id":5000,"name":"10b"}],
+ "teacher":[{"id":123,"name":"Herr Müller"}],
+ "room":[],
+ "subject":[],
+ "technik":{"id":2000000000,"name":"Technik"}}
+```
+
+`class`/`teacher`/`room`/`subject` are always present (possibly `[]`);
+`personal` is present when the account has a person id; `technik` only for a
+`techniker`. Fields:
+
+- **everyone** — the pooled classes (`class`) + own personal timetable;
+- **`recon`** — the teachers/rooms/subjects the recon scan actually enumerated;
+- **`boosted` / staff** — every class/teacher/room/subject;
+- **`techniker`** — the synthetic Technik class.
+
+`GET /api/calendar/tokens` returns only the caller's own tokens (matched on
+`created_by`), each in the same shape as the mint response. `PATCH` takes
+`{"days":90}` (clamped `[1,365]`, default `30`) and `DELETE` removes the token —
+both **owner-checked**: a missing token and another user's token both return
+`404`. Neither endpoint touches the public `.ics` feed, so revoking takes effect
+on the next subscription fetch.
 
 ## The `.ics` feed
 
@@ -73,6 +125,11 @@ A **personal/student** feed additionally carries that student's own
 `buildCustomICSVEVENT`). Class/teacher/room/subject feeds cannot: they have no
 single username, so there is nowhere those private events could be read from.
 
+A **Technik** feed is the one class-like feed that *does* carry events: it is the
+same merged, student-labelled aggregate the app's synthetic Technik class shows,
+so a coordinator can subscribe to the whole events calendar. It downloads as
+`untis-technik.ics`.
+
 Feed horizons and element names come from the shared `masterData` cache; a
 subject's **longName** (`Mathematik 3`) is preferred over its short code (`M3`).
 
@@ -104,7 +161,7 @@ An unreadable timezone falls back to UTC rather than failing.
 |---|---|
 | Uniqueness | one token per (school, class) / (school, person) / (school, element) |
 | Expiry | disabled by default; `SetCalendarTokenMaxAge(d)` bounds it, after which the feed 404s |
-| Revocation | delete the token row (dashboard *Tokens* section or `untisctl`) |
+| Revocation | delete the token row (`DELETE /api/calendar/{token}` by its creator, the dashboard *Tokens* section, or `untisctl`) |
 | Usage | `lastUsed` is bumped on every `.ics` / week-page hit |
 | Transfer | the URL is a bearer credential; anyone with it reads the timetable |
 

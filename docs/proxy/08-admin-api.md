@@ -123,8 +123,9 @@ Several surfaces exist in both forms:
 
 | Concern | Self-service | Admin |
 |---|---|---|
-| Webhooks | `/api/webhooks` (own class / privileged) | `/admin/webhooks` (any) |
-| ntfy | `/api/ntfy` (own class/student / privileged) | `/admin/ntfy` (any) |
+| Webhooks | `/api/webhooks` (own rows; targets gated like the calendar) | `/admin/webhooks` (any) |
+| ntfy | `/api/ntfy` (own rows; targets gated like the calendar) | `/admin/ntfy` (any) |
+| Subscribe options | `GET /api/notifications/options` | `/admin/*` listing any |
 | Calendar tokens | `POST /api/calendar/token` (own targets) | `/admin/tokens` (any element) |
 
 Everything admin can do is a superset of the self-service form. Admin does **not**

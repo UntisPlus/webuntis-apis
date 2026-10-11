@@ -70,18 +70,22 @@ with `editor`/`boosted`/admin.
 
 | Route | Methods | Body / notes |
 |---|---|---|
-| `/api/webhooks` | GET | `{"webhooks":[{"id","school","classId","url"}]}` |
-| `/api/webhooks` | POST | `{"classId":5000,"url":"…","secret":"…"}` → `{"id":N}` |
+| `/api/notifications/options` | GET | the element catalog you may watch (same shape as `/api/calendar/options`, minus `technik`) |
+| `/api/webhooks` | GET | your own rows: `{"webhooks":[{"id","school","elementType","elementId","name","classId","url","createdBy"}]}` |
+| `/api/webhooks` | POST | target keys below + `{"url":"…","secret":"…"}` → `{"id":N}` |
 | `/api/webhooks/{id}` | DELETE | `{"deleted":true}` |
 | `/api/webhooks/{id}/test` | POST | fire a test delivery → `{"ok":true,"status":N}` |
-| `/api/ntfy` | GET | `{"topics":[{"id","school","classId","topic","baseUrl"}]}` |
-| `/api/ntfy` | POST | `{"classId":5000,"topic":"…","baseUrl":"…"}` → `{"id":N}` |
+| `/api/ntfy` | GET | your own rows: `{"topics":[{"id","school","elementType","elementId","name","classId","topic","baseUrl","createdBy"}]}` |
+| `/api/ntfy` | POST | target keys below + `{"topic":"…","baseUrl":"…"}` → `{"id":N}` |
 | `/api/ntfy/{id}` | DELETE | `{"deleted":true}` |
 | `/api/ntfy/{id}/test` | POST | → `{"ok":true,"status":N,"topic":"…","server":"…"}` |
 
-The `GET /api/ntfy` listing is **element-aware**: a plain user sees topics for
-their own class and their own student element; school-wide and
-teacher/room/subject topics are only listed for `editor`/`boosted`/admin. See
+`POST` uses the calendar mint's target keys — `classId`, `personal`/`personId`,
+`teacherId`, `roomId`, `subjectId`. At most one may be set; none means the
+school-wide target (privileged only). Teacher/room/subject need recon, `boosted`,
+or a staff (non-student) account, exactly like the calendar. The synthetic
+Technik class (`classId 2000000000`) is refused: the change poller cannot
+deliver it. Both `GET` listings return only the caller's own subscriptions. See
 [04](04-notifications.md) for the full model.
 
 ## Homework
@@ -129,6 +133,10 @@ An empty or whitespace-only `note` clears it. Capped at 2000 characters. See
 | Route | Auth | Notes |
 |---|---|---|
 | `POST /api/calendar/token` | session | mint/return a subscription token |
+| `GET /api/calendar/options` | session | subscribable targets (mirrors app visibility) |
+| `GET /api/calendar/tokens` | session | the caller's own tokens |
+| `PATCH /api/calendar/{token}` | session (owner) | change the lookahead window |
+| `DELETE /api/calendar/{token}` | session (owner) | revoke a token |
 | `GET /api/calendar/{token}.ics` | token | the iCal feed |
 | `GET /week/{token}` | token | server-rendered week page (no JS) |
 
@@ -136,6 +144,7 @@ An empty or whitespace-only `note` clears it. Capped at 2000 characters. See
 
 ```json
 {"classId":5000}
+{"classId":2000000000}
 {"personal":true}
 {"personId":5006}
 {"teacherId":123}
@@ -144,8 +153,10 @@ An empty or whitespace-only `note` clears it. Capped at 2000 characters. See
 ```
 
 Optional: `{"timezone":"Europe/Berlin"}` (default), `{"days":30}` (default 30,
-max 365). Access: classes need pool membership; personal needs your own person
-id; teacher/room/subject need `recon` or `boosted`. Response:
+max 365). Access: classes need pool membership (or `boosted`/staff);
+`classId:2000000000` is the synthetic **Technik** aggregate and needs
+`techniker`; personal needs your own person id; teacher/room/subject need
+`recon`, `boosted`, or staff. Response:
 
 ```json
 {"type":"class","id":5000,"name":"10b","classId":5000,
@@ -155,7 +166,10 @@ id; teacher/room/subject need `recon` or `boosted`. Response:
  "created":1750000000,"lastUsed":1750000000,"createdBy":"jdoe"}
 ```
 
-See [05](05-calendar.md) for the feed contents and `/week`.
+`GET /api/calendar/options` mirrors the `masterData` visibility the login
+rewrite sets (pooled classes + personal for everyone, `recon` enumerations,
+`boosted`/staff everything, `techniker` the Technik class). See
+[05](05-calendar.md) for the full shape, the feed contents and `/week`.
 
 ## Student events (Technik) — admin API
 
