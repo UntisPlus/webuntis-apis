@@ -1,0 +1,24 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*.class
+
+# Go build output
+/bin/
+*.test
+
+# Node
+node_modules/
+package-lock.json
+yarn.lock
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# Local scratch
+/tmp/
+*.log
