@@ -27,3 +27,7 @@ Keep a Changelog (keepachangelog.com).
 - Runnable examples under `examples/`: Python 3 (stdlib only) plus `curl`
   scripts for each API surface, and `examples/.env.example`.
 - Illustrated sample payloads under `samples/` for every API surface.
+- Offline mirror of the official Untis developer documentation under
+  `docs/platform/` (42 pages: authentication, every Platform resource API,
+  OneRoster, webhooks and integration guides), plus a Platform API summary with
+  current versions, rate limits and the deleted-periods endpoint.

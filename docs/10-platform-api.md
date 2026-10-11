@@ -3,6 +3,10 @@
 > 🟢 **Official.** Published by Untis GmbH on its developer portal
 > (developer.untis.com); summarised locally in this page.
 > This is the sanctioned, versioned, contract-backed integration surface.
+>
+> 📚 **Full offline copy:** the entire official documentation is mirrored under
+> [`platform/`](platform/README.md) (42 pages: auth, all resource APIs,
+> OneRoster, webhooks, guides). This page is the quick orientation.
 
 ## Base URLs
 
@@ -40,32 +44,51 @@ grant_type=client_credentials
 
 ## Rate limits & quotas
 
-- Token lifetime **~3 minutes** (client credentials).
-- Respect `expires_in`; do not request a token per call.
+- **Max 40 requests/second per app** (fair-use monitoring).
+- Token lifetime **~3 minutes** (client credentials); respect `expires_in` and
+  do not request a token per call.
+- Schedule large sync jobs off-peak: **Mon–Fri 19:00–05:00, or weekends**.
+  Avoid 06:00–09:00.
 
 ## Resource APIs
 
-| API | Version | Status |
+| API | Current version | Status |
 |---|---|---|
-| Students | v1 | current |
+| User management | v1 | current |
+| Student management | **v3** | v1/v2 deprecated |
+| Teacher management | **v2** | v1 deprecated |
+| Legal guardian management | v1 | current |
+| Class management | **v2** | v1 deprecated |
+| Room management | v1 | current (read-only) |
+| Subject management | v1 | current (read-only) |
+| Teacher absence management | v1 | current |
+| Teacher absence reasons | v1 | current |
 | Timetable | **v3** | v1/v2 deprecated — see [09](09-extern-timetable-v3.md) |
-| Teachers | v2 | |
-| Classes | v1 | |
-| Rooms | v1 | |
-| Subjects | v1 | |
-| Absences | v1 | |
-| Exams | v1 | |
-| Lessons | v1 | |
-| Messaging | v1 | |
-| OneRoster | v1p1 | |
+| Timetable event push | v1 | current |
+| Class register absences | v1 | current |
+| Exams | v1 | current |
+| Lessons | v1 | current |
+| Messaging | v1 | current |
+| OneRoster | v1p1 | current |
 
-Typical endpoints (pattern):
+Pattern:
 
 ```
-GET {{API_URL}}/WebUntis/api/rest/extern/v1/students
+GET {{API_URL}}/WebUntis/api/rest/extern/v3/students?schoolYearId=2026
+GET {{API_URL}}/WebUntis/api/rest/extern/v3/teachers
+GET {{API_URL}}/WebUntis/api/rest/extern/v3/classes
+GET {{API_URL}}/WebUntis/api/rest/extern/v2/teachers
+GET {{API_URL}}/WebUntis/api/rest/extern/v1/rooms
 GET {{API_URL}}/WebUntis/api/rest/extern/v3/timetable?start=…&end=…&class=…
+GET {{API_URL}}/WebUntis/api/rest/extern/v3/timetable/deleted-periods?dateLastModifiedAfter=…
 GET {{API_URL}}/WebUntis/api/rest/extern/v1/exams?start=…&end=…
+GET {{API_URL}}/ims/oneroster/v1p1/students?limit=100&offset=0
 ```
+
+Every list endpoint supports OneRoster-style `limit`/`offset` paging, `sort` +
+`orderBy=asc|desc`, and a single-operator `filter` (see
+[Common API concepts](platform/pages/api-reference-common-api-concepts.md)).
+Per-resource details are in the [`platform/`](platform/README.md) mirror.
 
 ## Errors
 
@@ -90,6 +113,6 @@ For quick, unauthenticated reads of a public timetable, the public JSON-RPC API
 
 ## Sources
 
-This page summarises the official developer portal (developer.untis.com). The
-External Timetable v3 spec it references is vendored locally in
-[`specs/untis-extern/`](../specs/untis-extern).
+This page summarises the official developer portal (developer.untis.com), which
+is mirrored in full under [`platform/`](platform/README.md). The External
+Timetable OpenAPI is vendored in [`../specs/untis-extern/`](../specs/untis-extern).

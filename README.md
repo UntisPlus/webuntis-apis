@@ -35,6 +35,8 @@ learn or use these APIs:
 
 - **`docs/`** — the prose reference, one page per API family (start at
   [00 — Getting started](docs/00-getting-started.md) if you're new).
+- **`docs/platform/`** — a full offline mirror of the official Untis developer
+  documentation (all Platform resource APIs, OneRoster, webhooks, guides).
 - **`specs/`** — the machine-readable OpenAPI documents (intern + extern),
   vendored locally with attribution. See [`specs/README.md`](specs/README.md).
 - **`examples/`** — runnable Python and `curl` scripts for every surface, with a

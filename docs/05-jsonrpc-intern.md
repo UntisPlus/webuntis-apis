@@ -67,6 +67,7 @@ Method names and params below are reverse-engineered.
 | `getOfficeHours2017` | `klasseId`, `startDate` | office hours |
 | `getLessonTopic2017` | lesson identifiers | lesson topics |
 | `getAppInfo`, `getVersion` | `{}` | no auth block |
+| `getColors2017` | auth block | fore/back colours for element categories |
 | `getAppSharedSecret` | `username`, `password`, `token` | no auth block |
 | `getAuthToken` | `auth: { user, key }` (no `otp`) | returns a JWT for the REST API |
 

@@ -17,7 +17,13 @@ siblings.
 | [08 — Legacy cookie REST](08-legacy-rest.md) | 🔴 `api/app/config`, `api/homeworks`, `weekly/data` |
 | [09 — Timetable API v3 (extern)](09-extern-timetable-v3.md) | 🟢 The official external timetable API |
 | [10 — Untis Platform API](10-platform-api.md) | 🟢 `api.webuntis.com` OAuth2 resource APIs |
+| [10+ — Platform API mirror](platform/README.md) | 🟢 Full offline copy of the official platform docs (42 pages) |
 | [11 — Formats & conventions](11-conventions.md) | Dates, times, element types, error codes |
+| [12 — Credits](12-reference-clients.md) | Prior art, specs used, getting credentials |
+
+> **Official platform docs:** the complete Untis developer documentation is
+> mirrored locally under [`platform/`](platform/README.md) — API reference for
+> every resource, OneRoster, webhooks and integration guides.| [11 — Formats & conventions](11-conventions.md) | Dates, times, element types, error codes |
 | [12 — Credits](12-reference-clients.md) | Prior art, specs used, getting credentials |
 
 > **Provenance legend**
