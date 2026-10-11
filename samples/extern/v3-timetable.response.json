@@ -1,0 +1,36 @@
+{
+  "version": "3.0",
+  "masterData": {
+    "classes": [
+      { "id": 88, "name": "5a", "longName": "5a", "active": true }
+    ],
+    "teachers": [
+      { "id": 41, "name": "MUE", "longName": "Mueller", "active": true }
+    ],
+    "rooms": [
+      { "id": 12, "name": "A101", "longName": "A101", "active": true }
+    ],
+    "subjects": [
+      { "id": 7, "name": "MA", "longName": "Mathematics", "active": true }
+    ]
+  },
+  "timetableData": {
+    "periods": [
+      {
+        "id": 4021,
+        "type": "lesson",
+        "cellState": "STANDARD",
+        "startDateTime": "2026-10-05T08:00:00",
+        "endDateTime": "2026-10-05T08:50:00",
+        "kl": [{ "id": 88, "name": "5a", "longName": "5a", "orgId": 88, "displayName": "5a" }],
+        "te": [{ "id": 41, "name": "MUE", "longName": "Mueller", "orgId": 41, "displayName": "Mueller" }],
+        "ro": [{ "id": 12, "name": "A101", "longName": "A101", "orgId": 12, "displayName": "A101" }],
+        "su": [{ "id": 7, "name": "MA", "longName": "Mathematics", "orgId": 7, "displayName": "Mathematics" }],
+        "ls": [{ "id": 301 }],
+        "hasBooking": false,
+        "is": null,
+        "sb": []
+      }
+    ]
+  }
+}

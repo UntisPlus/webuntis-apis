@@ -101,7 +101,7 @@ GET /WebUntis/api/rest/view/v1/timetable/entries?start=2026-10-05&end=2026-10-11
 ## Response schemas
 
 These are the schemas from the reverse-engineered
-[`untis-rest.yaml`](https://github.com/SapuSeven/BetterUntis/blob/master/api/spec/untis-intern/untis-rest.yaml).
+[`untis-rest.yaml`](../specs/untis-intern/untis-rest.yaml).
 
 ### Messages
 

@@ -1,6 +1,7 @@
 # 10 — Untis Platform API
 
-> 🟢 **Official.** Documented at [`developer.untis.com`](https://developer.untis.com/).
+> 🟢 **Official.** Published by Untis GmbH on its developer portal
+> (developer.untis.com); summarised locally in this page.
 > This is the sanctioned, versioned, contract-backed integration surface.
 
 ## Base URLs
@@ -89,5 +90,6 @@ For quick, unauthenticated reads of a public timetable, the public JSON-RPC API
 
 ## Sources
 
-- Developer portal: <https://developer.untis.com/>
-- Timetable v3: <https://developer.untis.com/api-reference/webuntis-apis/timetable-data/>
+This page summarises the official developer portal (developer.untis.com). The
+External Timetable v3 spec it references is vendored locally in
+[`specs/untis-extern/`](../specs/untis-extern).

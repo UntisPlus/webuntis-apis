@@ -1,0 +1,47 @@
+{
+  "jsonrpc": "2.0",
+  "id": "untis-mobile-android",
+  "result": {
+    "userData": {
+      "id": 124,
+      "personId": 124,
+      "personType": 2,
+      "role": 2,
+      "displayName": "Max Muster",
+      "schoolId": 1234,
+      "tenantId": 1004400,
+      "schoolyearId": 2026,
+      "masterData": {
+        "classes": [
+          { "id": 88, "name": "5a", "longName": "5a", "active": true }
+        ],
+        "teachers": [
+          { "id": 41, "name": "MUE", "longName": "Mueller", "active": true }
+        ],
+        "rooms": [
+          { "id": 12, "name": "A101", "longName": "A101", "active": true }
+        ],
+        "subjects": [
+          { "id": 7, "name": "MA", "longName": "Mathematics", "active": true }
+        ],
+        "holidays": [],
+        "timeGrid": {
+          "units": [
+            { "id": 1, "name": "1", "startTime": 800, "endTime": 850 },
+            { "id": 2, "name": "2", "startTime": 850, "endTime": 940 }
+          ]
+        }
+      },
+      "settings": {
+        "weekStart": 1,
+        "dateFormat": "dd.MM.yyyy",
+        "timeFormat": "HH:mm"
+      },
+      "rights": [
+        { "name": "timetable", "value": true },
+        { "name": "messages", "value": true }
+      ]
+    },
+    "sessionTimeout": 1800
+  }
+}

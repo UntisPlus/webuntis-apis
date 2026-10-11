@@ -25,4 +25,5 @@ The full legal text is available at:
 
 This license applies to the original prose and diagrams authored in this
 repository. Quoted API specifications and the OpenAPI fragments under `specs/`
-retain the licensing of their original authors; see `specs/README.md`.
+retain the licensing of their original authors; see [`NOTICE.md`](NOTICE.md) and
+[`specs/README.md`](specs/README.md).

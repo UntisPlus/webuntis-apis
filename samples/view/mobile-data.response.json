@@ -1,0 +1,29 @@
+{
+  "userData": {
+    "id": 124,
+    "displayName": "Max Muster",
+    "personType": 2
+  },
+  "class": {
+    "id": 88,
+    "name": "5a",
+    "longName": "5a"
+  },
+  "schoolYear": {
+    "id": 2026,
+    "name": "2026/2027",
+    "startDate": "2026-08-10",
+    "endDate": "2027-07-16"
+  },
+  "permissions": [
+    { "name": "timetable", "granted": true },
+    { "name": "absences", "granted": true },
+    { "name": "messages", "granted": true },
+    { "name": "exams", "granted": false }
+  ],
+  "featureFlags": {
+    "showExam": true,
+    "showHomework": true,
+    "showAbsences": true
+  }
+}

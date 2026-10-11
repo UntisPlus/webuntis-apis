@@ -28,10 +28,25 @@ labelled **official** or **reverse-engineered** so you know how much to trust it
 | Extern Timetable API v3 | `<server>.webuntis.com/WebUntis/api/rest/extern/v3/timetable` | REST/JSON | OAuth2 / platform token | [09](docs/09-extern-timetable-v3.md) |
 | Untis Platform API | `api.webuntis.com/WebUntis/api/rest/extern/…` | REST/JSON + OIDC/OAuth2 | OAuth2 / OIDC | [10](docs/10-platform-api.md) |
 
+## Everything is in this repo
+
+This is a one-stop reference — you should not need to visit any other site to
+learn or use these APIs:
+
+- **`docs/`** — the prose reference, one page per API family (start at
+  [00 — Getting started](docs/00-getting-started.md) if you're new).
+- **`specs/`** — the machine-readable OpenAPI documents (intern + extern),
+  vendored locally with attribution. See [`specs/README.md`](specs/README.md).
+- **`examples/`** — runnable Python and `curl` scripts for every surface, with a
+  shared helper library. See [`examples/README.md`](examples/README.md).
+- **`samples/`** — saved request/response payloads so you can see real shapes
+  without touching a school server.
+
 ## Documentation index
 
 | Doc | Contents |
 |---|---|
+| [00 — Getting started](docs/00-getting-started.md) | New here? A guided tour from zero to a first request |
 | [01 — Overview](docs/01-overview.md) | How the families relate, server architecture, when to use which |
 | [02 – Authentication](docs/02-authentication.md) | Cookie sessions, TOTP/QR, JWT, OAuth2/OIDC, anonymous access |
 | [03 – School discovery](docs/03-school-discovery.md) | `searchSchool`, `schoolquery2`, server URL derivation |
@@ -43,15 +58,15 @@ labelled **official** or **reverse-engineered** so you know how much to trust it
 | [09 – Timetable API v3 (extern)](docs/09-extern-timetable-v3.md) | 🟢/🟡 official `/api/rest/extern/v{1,2,3}/timetable` |
 | [10 – Untis Platform API](docs/10-platform-api.md) | 🟢 `api.webuntis.com`, OAuth2, resource APIs |
 | [11 – Formats & conventions](docs/11-conventions.md) | Dates, times, element types, error codes |
-| [12 – Reference clients](docs/12-reference-clients.md) | Open-source implementations and specs |
+| [12 – Credits](docs/12-reference-clients.md) | Prior art, specs used, and how to get credentials |
 
 ## OpenAPI specs
 
-The machine-readable companions to the prose docs live upstream (the
-reverse-engineered specs come from the [BetterUntis](https://github.com/SapuSeven/BetterUntis)
-project; the external timetable spec is published by Untis GmbH). See
-[`specs/README.md`](specs/README.md) for links and attribution rather than
-vendored copies.
+The machine-readable companions to the prose docs are **included in this
+repository** under [`specs/`](specs/README.md): the reverse-engineered intern
+specs (`untis-mobile.yaml`, `untis-rest.yaml`) and the external Timetable API
+(Untis GmbH) with its error schemas. See [`specs/README.md`](specs/README.md)
+for the index, [`NOTICE.md`](NOTICE.md) for attribution and licenses.
 
 ## Examples
 
@@ -73,8 +88,8 @@ This repository documents API surfaces by observation and by citing public
 sources. It contains **no** Untis server code and no credentials. "Untis" and
 "WebUntis" are trademarks of Untis GmbH. Reverse-engineered sections are not
 endorsed by Untis and may violate a provider's terms of service; the only
-sanctioned integration surface is the one described at
-[`developer.untis.com`](https://developer.untis.com/).
+sanctioned integration surface is the official developer portal
+(developer.untis.com). See [`NOTICE.md`](NOTICE.md) for attribution.
 
 ## License
 

@@ -1,0 +1,7 @@
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjQiLCJleHAiOjE3OTQwNTg0MDB9.SIGNATURE_NOT_REAL",
+  "refreshToken": "r3fr3sh-t0k3n-not-real",
+  "expiresIn": 3600,
+  "isPasswordChangeRequired": false,
+  "isEmailChangeRequired": false
+}

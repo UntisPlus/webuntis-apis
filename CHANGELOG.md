@@ -1,13 +1,14 @@
 # Changelog
 
 All notable changes to this reference are recorded here. The format follows
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Keep a Changelog (keepachangelog.com).
 
 ## [Unreleased]
 
 ### Added
 
 - Initial documentation set:
+  - `00` getting-started guided tour
   - `01` overview and API-family matrix
   - `02` authentication (cookie, TOTP/QR, JWT, OAuth2/OIDC)
   - `03` school discovery (`searchSchool`, `schoolquery2`)
@@ -19,7 +20,10 @@ All notable changes to this reference are recorded here. The format follows
   - `09` external Timetable API v1/v2/v3
   - `10` Untis Platform API (OAuth2)
   - `11` formats, element types, error codes
-  - `12` reference clients and sources
+  - `12` credits, prior art and how to get credentials
+- Vendored the machine-readable specs under `specs/` (intern `untis-mobile.yaml`
+  and `untis-rest.yaml`, extern Timetable v3 with error schemas) so the repo is
+  self-contained, with attribution in `NOTICE.md`.
 - Runnable examples under `examples/`: Python 3 (stdlib only) plus `curl`
   scripts for each API surface, and `examples/.env.example`.
-- `specs/README.md` with links to the upstream machine-readable specs.
+- Illustrated sample payloads under `samples/` for every API surface.

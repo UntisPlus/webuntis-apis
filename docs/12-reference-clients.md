@@ -1,46 +1,54 @@
-# 12 — Reference clients & sources
+# 12 — Credits & prior art
 
-Open-source projects that implement or document these APIs, and the primary
-external sources used to write this reference.
+Everything you need to use the WebUntis/Untis APIs is contained in this
+repository: the prose in [`docs/`](README.md), the OpenAPI documents under
+[`specs/`](../specs), the runnable [`examples/`](../examples), and the recorded
+payloads under [`samples/`](../samples). You should never have to leave this
+repo to understand an endpoint.
 
-## Implementations
+This page credits the projects the reference was built from and shares credit
+with. Links and license details for anything we re-publish live in
+[`NOTICE.md`](../NOTICE.md).
 
-| Project | Language | What it shows |
+## Prior art
+
+Reverse-engineering the WebUntis APIs was community work. The following
+open-source projects, in roughly the order they informed this reference, made
+it possible:
+
+| Project | Language | What it contributed |
 |---|---|---|
-| [SapuSeven/BetterUntis](https://github.com/SapuSeven/BetterUntis) | Kotlin / Android | Intern JSON-RPC client, `Auth.kt` TOTP, `*2017` method constants, reverse-engineered OpenAPI specs (`untis-mobile.yaml`, `untis-rest.yaml`) |
-| [SchoolUtils/WebUntis](https://github.com/SchoolUtils/WebUntis) | Node / JS | JSON-RPC + OTP login, `api/token/new` JWT minting, legacy `api/*` REST |
-| [Meow/webuntis-api](https://github.com/Meow/webuntis-api) | Ruby | Four login modes, anonymous `100170`, TOTP, JWT refresh, `view` v1–v4 endpoint list, `schoolquery2` discovery |
-| [python-webuntis/python-webuntis](https://github.com/python-webuntis/python-webuntis) | Python | Public `jsonrpc.do` methods + required-rights matrix |
-| [michilyy/pyWebUntis](https://github.com/michilyy/pyWebUntis) | Python | Intern `*2017` methods, `anonymous-school` header |
-| [4biddencode/UntAPI](https://github.com/4biddencode/UntAPI) | Node | Method index, error codes |
-| [mklemmingen/webuntis-public](https://github.com/mklemmingen/webuntis-public) | ? | Anonymous timetable access, migration away from `weekly/data` |
-| [untis](https://docs.rs/untis/) (Rust crate) | Rust | `getStatusData` and client structure |
-| [xp4u1/untis](https://github.com/xp4u1/untis), [webuntis](https://webuntis.hexdocs.pm/json-rpc.html) | Elixir | JSON-RPC method constants, 2017 methods |
-| [Keule0010/WebUntisAPI](https://github.com/Keule0010/WebUntisAPI) | Java | `searchSchool`, secret login |
+| SapuSeven/BetterUntis | Kotlin / Android | Intern JSON-RPC client, `Auth.kt` TOTP, `*2017` method constants, and the reverse-engineered OpenAPI specs (vendored in [`specs/untis-intern/`](../specs/untis-intern)) |
+| SchoolUtils/WebUntis | Node / JS | JSON-RPC + OTP login, `api/token/new` JWT minting, legacy `api/*` REST |
+| Meow/webuntis-api | Ruby | Four login modes, the anonymous OTP `100170`, TOTP, JWT refresh, the `view` v1–v4 endpoint list, `schoolquery2` discovery |
+| python-webuntis/python-webuntis | Python | Public `jsonrpc.do` methods and the required-rights matrix |
+| michilyy/pyWebUntis | Python | Intern `*2017` methods and the `anonymous-school` header |
+| 4biddencode/UntAPI | Node | Method index and error codes |
+| mklemmingen/webuntis-public | ? | Anonymous timetable access and migration away from `weekly/data` |
+| untis (Rust crate) | Rust | `getStatusData` and client structure |
+| xp4u1/untis, webuntis (Elixir) | Elixir | JSON-RPC method constants, `2017` methods |
+| Keule0010/WebUntisAPI | Java | `searchSchool` and secret login |
 
-## Specifications
+## Specifications used
 
-| Spec | Origin | Location |
+| Spec | Origin | In this repo |
 |---|---|---|
-| WebUntis JSON-RPC API PDF (2018-09-20) | 🟡 Untis-authored | [untis-sr.ch mirror](https://untis-sr.ch/wp-content/uploads/2019/11/2018-09-20-WebUntis_JSON_RPC_API.pdf) |
-| Timetable API v3 | 🟢 Untis GmbH | [`specs/README.md`](../specs/README.md) |
-| Untis Mobile / REST (intern) | 🔴 BetterUntis | [`specs/README.md`](../specs/README.md) |
+| WebUntis JSON-RPC API (2018-09-20) | 🟡 authored by Untis GmbH | rendered as [04 — Public JSON-RPC](04-jsonrpc-public.md) |
+| External Timetable API v1/v2/v3 | 🟢 Untis GmbH | [`specs/untis-extern/`](../specs/untis-extern) |
+| Untis Mobile / REST (intern) | 🔴 BetterUntis | [`specs/untis-intern/`](../specs/untis-intern) |
 
-## Official documentation
+## Getting credentials
 
-- Developer portal: <https://developer.untis.com/>
-- Timetable v3: <https://developer.untis.com/api-reference/webuntis-apis/timetable-data/>
-- Untis website: <https://www.untis.at/>
-
-## Community write-ups
-
-- SchoolUtils docs: <https://webuntis.noim.me/>
-- Ruby `webuntis-api` REST rdoc:
-  <https://rdoc.info/github/Meow/webuntis-api/WebUntis/REST>
-- BetterUntis issue #219 (URL derivation, mobile service URL):
-  <https://github.com/SapuSeven/BetterUntis/issues/219>
+The official API keys, SSO clients and platform passwords are issued by Untis
+GmbH through its developer portal (developer.untis.com). That portal is the only
+part of this stack that is not (and cannot be) mirrored here — you need an
+account there to call the official Platform and Timetable APIs in production.
+Everything about *how* those APIs behave is documented locally in
+[10 — Platform API](10-platform-api.md) and
+[09 — Timetable API v3](09-extern-timetable-v3.md).
 
 ## See also
 
 - [`README.md`](../README.md) — project overview
-- [`specs/README.md`](../specs/README.md) — spec attribution
+- [`NOTICE.md`](../NOTICE.md) — attribution and licenses
+- [`specs/README.md`](../specs/README.md) — spec index

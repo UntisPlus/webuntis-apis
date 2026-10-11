@@ -1,0 +1,24 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": [
+    {
+      "id": 88,
+      "name": "5a",
+      "longName": "5a",
+      "active": true
+    },
+    {
+      "id": 89,
+      "name": "5b",
+      "longName": "5b",
+      "active": true
+    },
+    {
+      "id": 90,
+      "name": "6a",
+      "longName": "6a",
+      "active": true
+    }
+  ]
+}

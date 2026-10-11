@@ -1,0 +1,40 @@
+{
+  "jsonrpc": "2.0",
+  "id": "3",
+  "result": [
+    {
+      "id": 4021,
+      "date": 20261005,
+      "startTime": 800,
+      "endTime": 850,
+      "kl": [{ "id": 88, "name": "5a", "longname": "5a" }],
+      "te": [{ "id": 41, "name": "MUE", "longname": "Mueller" }],
+      "ro": [{ "id": 12, "name": "A101", "longname": "A101" }],
+      "su": [{ "id": 7, "name": "MA", "longname": "Mathematics" }],
+      "code": "normal",
+      "type": "ls",
+      "lstype": "ls",
+      "substText": null,
+      "info": "",
+      "statflags": "0",
+      "sg": null
+    },
+    {
+      "id": 4022,
+      "date": 20261005,
+      "startTime": 850,
+      "endTime": 940,
+      "kl": [{ "id": 88, "name": "5a", "longname": "5a" }],
+      "te": [{ "id": 55, "name": "SCH", "longname": "Schmidt" }],
+      "ro": [{ "id": 18, "name": "B204", "longname": "B204" }],
+      "su": [{ "id": 3, "name": "EN", "longname": "English" }],
+      "code": "cancelled",
+      "type": "ls",
+      "lstype": "ls",
+      "substText": "Lehrkraft erkrankt",
+      "info": "",
+      "statflags": "0",
+      "sg": null
+    }
+  ]
+}
