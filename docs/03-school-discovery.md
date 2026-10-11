@@ -58,14 +58,14 @@ POST https://mobile.webuntis.com/ms/app/<appId>?school=<school>&v=a4.2.10&m=getA
 Also reachable as the intern JSON-RPC method `getAppSharedSecret` (see
 [05](05-jsonrpc-intern.md)).
 
-## 4. Direct probing 🔴
+## 3. Direct probing 🔴
 
 Some clients skip search entirely and probe common TLDs
 (`.webuntis.com`, `.webuntis.de`, `.webuntis.at`, `*.untis.at`) for a reachable
 `/WebUntis/jsonrpc.do`. This is discouraged: it is slow, noisy, and can trip
 rate limits.
 
-## 5. Resolving the tenant server from a known part
+## 4. Resolving the tenant server from a known part
 
 - If the school name equals the server subdomain (`mese` → `mese.webuntis.com`),
   you can try it directly.
@@ -74,7 +74,7 @@ rate limits.
 - The Platform API resolves everything through `api.webuntis.com` and its
   `tenantId`, so no `searchSchool` is needed — see [10](10-platform-api.md).
 
-## 6. The `schoolname` cookie 🔴
+## 5. The `schoolname` cookie 🔴
 
 The web client and REST calls additionally set:
 

@@ -55,8 +55,8 @@ You can try the whole flow with only `curl`. Discovery first:
 
 ```sh
 curl -sS -H 'Content-Type: application/json' \
-  -d '{"id":"1","method":"searchSchool","params":{"search":"Gymnasium"},"jsonrpc":"2.0"}' \
-  https://schoolsearch.webuntis.com/WebUntis/jsonrpc.do
+  -d '{"id":"1","method":"searchSchool","params":[{"schoolid":0,"search":"Gymnasium München"}],"jsonrpc":"2.0"}' \
+  https://schoolsearch.webuntis.com/schoolquery2
 ```
 
 Pick a result's `server` and `loginName`, then log in and ask for classes:
