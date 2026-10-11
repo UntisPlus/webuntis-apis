@@ -22,3 +22,6 @@ yarn.lock
 # Local scratch
 /tmp/
 *.log
+
+# Credentials
+.env

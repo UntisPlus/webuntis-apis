@@ -53,6 +53,20 @@ project; the external timetable spec is published by Untis GmbH). See
 [`specs/README.md`](specs/README.md) for links and attribution rather than
 vendored copies.
 
+## Examples
+
+Runnable, download-and-try examples live in [`examples/`](examples): Python 3
+scripts (standard library only) and `curl` scripts for each API surface, plus a
+`lib.py` with a cookie-aware HTTP client, TOTP and JWT helpers.
+
+```sh
+cp examples/.env.example examples/.env   # fill in server, school, credentials
+set -a; . examples/.env; set +a
+python3 examples/python/01_school_search.py "Gymnasium"
+```
+
+See [`examples/README.md`](examples/README.md) for the full list.
+
 ## Legal
 
 This repository documents API surfaces by observation and by citing public

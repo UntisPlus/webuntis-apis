@@ -20,4 +20,6 @@ All notable changes to this reference are recorded here. The format follows
   - `10` Untis Platform API (OAuth2)
   - `11` formats, element types, error codes
   - `12` reference clients and sources
+- Runnable examples under `examples/`: Python 3 (stdlib only) plus `curl`
+  scripts for each API surface, and `examples/.env.example`.
 - `specs/README.md` with links to the upstream machine-readable specs.
