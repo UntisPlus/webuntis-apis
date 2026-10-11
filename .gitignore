@@ -25,3 +25,7 @@ yarn.lock
 
 # Credentials
 .env
+
+# Unofficial copy of the Untis-authored JSON-RPC PDF.
+# Kept locally for reference, not redistributed (copyright).
+/specs/reference/

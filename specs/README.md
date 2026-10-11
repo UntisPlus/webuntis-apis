@@ -37,10 +37,15 @@ the files they cover:
 
 Untis authored a PDF titled *WebUntis JSON-RPC API* (dated 2018-09-20) that
 specifies the public `jsonrpc.do` methods. It is redistributable only by Untis,
-so it is **not** mirrored in this repository (an earlier third-party mirror is
-now offline). Its full method set is reproduced in prose in
-[`docs/04-jsonrpc-public.md`](../docs/04-jsonrpc-public.md), so this repository
-remains self-sufficient.
+so it is **not** committed to this repository. Its full method set is reproduced
+in prose in [`docs/04-jsonrpc-public.md`](../docs/04-jsonrpc-public.md), so this
+repository remains self-sufficient without it.
+
+If you want the original PDF locally, drop it in `specs/reference/` — that path
+is gitignored, so it stays on your machine and never gets published. It is
+available from the community mirror at
+`git.dergrimm.net/dergrimm/untis.rs` (the earlier `untis-sr.ch` mirror is
+offline), or directly from Untis GmbH on request.
 
 ## Adding a spec
 
