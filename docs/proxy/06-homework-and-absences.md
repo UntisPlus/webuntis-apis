@@ -66,8 +66,8 @@ never in place of them.
 
 ### Derived metadata
 
-Each of the viewer's own absences gains a `derived` block (omitted when nothing
-could be derived honestly):
+Each of the viewer's own absences gains a `derived` block (present but empty,
+`{}`, when nothing could be derived honestly):
 
 ```json
 { "id": 300001, "studentId": 5006, "klasseId": 5000,
