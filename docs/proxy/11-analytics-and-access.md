@@ -129,7 +129,10 @@ range has no gaps. It cannot establish that upstream retained every historical
 lesson; the response states this limitation. Unreadable windows are partial data,
 not successful zero-cancellation observations. Newer builds include an unavailable window's
 `reason`, covering source authentication, upstream rejection or transport/HTTP
-failures, and invalid timetable responses. Empty denominators have null rates.
+failures, and invalid timetable responses. A rejected JSON-RPC response may
+include the numeric `upstreamCode`. One-day personal requests may retry once
+with a nearby timetable range while keeping results limited to the requested
+day. Known authentication or access denials skip this retry. Empty denominators have null rates.
 
 Statistics include:
 

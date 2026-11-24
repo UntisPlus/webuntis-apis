@@ -177,6 +177,10 @@ components:
                 type: string
                 description: Present for unavailable windows on builds with analytics diagnostics.
                 enum: [source_auth_unavailable, upstream_rejected, upstream_unreachable, upstream_http_error, invalid_timetable_response]
+              upstreamCode:
+                type: integer
+                format: int32
+                description: Optional numeric upstream JSON-RPC error code. The original message is omitted.
         warnings:
           type: array
           items: {type: string}
