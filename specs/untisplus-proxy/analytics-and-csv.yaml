@@ -101,10 +101,14 @@ components:
       additionalProperties: false
       description: Supply an explicit from/to range or select a configured schoolYear.
       properties:
-        mode: {type: string, enum: [personal, teacher, class-history], default: personal}
+        mode: {type: string, enum: [personal, teacher, room, class-history], default: personal}
         from: {type: string, format: date}
         to: {type: string, format: date}
         teacherId: {type: integer, format: int64, minimum: 0}
+        room:
+          type: string
+          maxLength: 120
+          description: Exact upstream room name or numeric room ID. Required in room mode, which uses the signed-in teacher's saved credential and own upstream access.
         profileId: {type: string}
         schoolYear: {type: string}
         minLessons: {type: integer, minimum: 0, maximum: 100000, default: 0}
@@ -163,7 +167,8 @@ components:
       properties:
         version: {type: string}
         reportId: {type: string}
-        source: {type: string, enum: [personal, teacher, class-history]}
+        source: {type: string, enum: [personal, teacher, room, class-history]}
+        room: {type: string, description: Room selector in a named room report.}
         from: {type: string, format: date}
         to: {type: string, format: date}
         generatedAt: {type: string, format: date-time}

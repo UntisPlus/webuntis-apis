@@ -90,7 +90,7 @@ See the [OpenAPI contract](../../specs/untisplus-proxy/analytics-and-csv.yaml).
 }
 ```
 
-- `mode`: `personal` (default), `teacher`, or `class-history`.
+- `mode`: `personal` (default), `teacher`, `room`, or `class-history`.
 - `teacherId`: required and approved for teacher mode; optional as a filter of
   teachers appearing in personal/class-history data. It never widens that scope.
 - `profileId`: required for class-history mode; ignored profiles cannot be
@@ -250,6 +250,25 @@ The explicit date range works without configured analytics years. Until the
 school's year boundaries are configured, lessons can appear in the `unmapped`
 year bucket and still count in the totals. This command uses ordinary JSON
 report access. The dedicated export formats require the separate export grant.
+
+### Save a room report
+
+Use your enrolled teacher account to read cancellations for one room. For
+example, to save room 14-05 over an explicit date range:
+
+```bash
+(
+  umask 077
+  set -o pipefail
+  python3 scripts/test-teacher-cancellations.py YOUR_TEACHER_USERNAME \
+    --room '14-05' --from 2026-08-01 --to 2026-11-23 --json --show-names \
+    | tee /tmp/untisplus-room-14-05-2026-27.json
+)
+```
+
+You can use `--school-year` instead of the date flags once the school year
+has been saved. Use a numeric room ID if the room name is ambiguous.
+Room reports describe cancellations on the room's upstream timetable.
 
 ### Compare teachers and school years
 
