@@ -32,18 +32,24 @@ server gates also treat global denies as hard ceilings.
 | --- | --- |
 | `analytics.personal.view` | Analyse the caller's own upstream timetable |
 | `analytics.personal.history` | Permit personal dates older than the last 366 days; personal.view is still required |
-| `analytics.teacher.view` | Analyse explicitly approved teacher IDs through a saved teacher source |
-| `analytics.class_history.view` | Analyse an explicitly approved class-history profile |
+| `analytics.teacher.view` | Analyse approved teachers, approved rooms as a dashboard administrator, or rooms available through your own saved teacher credential |
+| `analytics.student.view` | Analyse explicitly approved student timetables through an eligible saved teacher |
+| `analytics.class_history.view` | Analyse an accessible own class, an approved class, or an approved class-history profile |
 | `analytics.export` | Download JSON or CSV ZIP within the same data permissions |
 
-Teacher/class-history grants alone do not approve targets. Configure a person's
-scope in the dashboard's analytics configuration, or use:
+Assign the capability and configure target approvals separately. In the
+dashboard, select the school and account under **Permissions → Analytics data
+scope configuration**, load the account's scope, then save the approved
+targets. The same settings are available through:
 
 `PUT /admin/access/analytics-access?school=NAME&user=USERNAME`
 
 ```json
 {
   "teacherIds": [42],
+  "studentIds": [70001],
+  "classIds": [81],
+  "roomSelectors": ["R101"],
   "profiles": [{
     "id": "my-class-history",
     "segments": [
@@ -54,23 +60,25 @@ scope in the dashboard's analytics configuration, or use:
 }
 ```
 
-GET on the same URL returns the configured scope. Class IDs and exact date
-ranges, rather than names alone, identify historical classes. A profile may
+GET on the same URL returns the configured scope with numeric `roomIds`.
+On PUT, supply either `roomSelectors` (exact upstream names or numeric strings)
+or `roomIds`. Use an empty array to clear an approval list. An omitted room,
+student, or class list retains its saved value. Each target list accepts up to
+2,000 IDs. Class IDs and exact date ranges identify historical classes. A profile may
 contain multiple classes in the same date range for a cohort. Duplicate teacher
 assignments with the same upstream period identity are counted once.
 
-Configure the school's actual year boundaries using
-`PUT /admin/access/analytics-years?school=NAME`:
+The administrator route `/admin/access/analytics-years?school=NAME` supports
+GET to read saved boundaries, POST to preview upstream dates through a saved
+teacher, and PUT to save reviewed dates:
 
 ```json
 {"years":[{"name":"2024/25","from":"2024-08-01","to":"2025-07-31"}]}
 ```
 
-Use the actual dates from upstream; August dates above are examples. Year names
-must be unique and ranges must not overlap. GET reads the configuration. Lessons
-outside configured years are explicitly grouped as `unmapped`, not assigned an
-invented school year. This is configuration, not an automatic upstream-year
-importer.
+Use the actual dates from upstream. Year names must be unique and ranges must
+not overlap. An explicit date-range report works before school years are saved.
+Lessons outside the saved boundaries are grouped as `unmapped`.
 
 ## JSON endpoint
 
@@ -109,8 +117,7 @@ rechecks access independently of discovery.
   `personal`, `saved-teacher`, `own-teacher`, `shared-class`, or
   `reconstruction`. Reconstruction uses only accessible shared classes and
   applies to permitted teachers or rooms. The response names the source used.
-- `profileId`: required for class-history mode; ignored profiles cannot be
-  supplied in personal/teacher mode.
+- `profileId`: required for class-history mode.
 - `schoolYear`: optional configured year name; fills omitted from/to and rejects
   explicit dates outside that year.
 - `minLessons`: minimum teacher assignments after date/source filtering,
@@ -127,8 +134,10 @@ rechecks access independently of discovery.
   apply. Omit it to use saved source credentials.
 
 Dates are inclusive. The current-day and future cutoff uses UTC. A request
-covers at most 366 days. Personal and teacher reports use up to 53 upstream windows of
-at most seven days each. For reports of at least a week, a short final window
+covers at most 366 days. Personal, teacher, student, class, and room reports
+use up to 53 upstream windows of at most seven days each. Reconstruction
+counts each class window toward that limit, so a broad reconstruction may
+need a shorter date range. For reports of at least a week, a short final window
 uses a full week within the requested range. Only its assigned dates are
 counted. Class-history reports use up to 32
 upstream windows of at most 31 days each. A one-day personal query
@@ -148,16 +157,22 @@ Reports recheck grants, admission, targets and master enablement before returnin
 
 ## Report data and definitions
 
-The JSON includes `version`, a report-local `reportId`, source mode, dates,
+The reader supports WebUntis responses using nested `timetable.periods`,
+flat `periods`, or mobile `ttData`. It resolves teachers from typed timetable
+elements or embedded teacher lists.
+
+The JSON includes `version`, a report-local `reportId`, target type in
+`source`, the actual read path in `dataSource`, dates,
 `generatedAt`, requested filters, warnings, and observed/unavailable windows.
 `complete` means all requested approved windows were read and the class-history
 range has no gaps. It cannot establish that upstream retained every historical
 lesson; the response states this limitation. Unreadable windows are partial data,
-not successful zero-cancellation observations. Newer builds include an unavailable window's
-`reason`, covering source authentication, upstream rejection or transport/HTTP
-failures, and invalid timetable responses. A rejected JSON-RPC response may
-include the numeric `upstreamCode`. One-day personal requests use a mobile-sized
-upstream window while keeping results limited to the requested day. Empty denominators have null rates.
+not successful zero-cancellation observations. Each unavailable window publishes
+a bounded `reason`: `source_auth_unavailable` (replay authentication could
+not be prepared), `upstream_rejected`, `upstream_unreachable`,
+`upstream_http_error`, or `invalid_timetable_response`. The report does not
+include raw upstream errors or source credentials. A rejected JSON-RPC reply
+may include the numeric `upstreamCode` for diagnosis. Empty denominators have null rates.
 
 Statistics include:
 
@@ -196,36 +211,32 @@ Statistics include:
 - Counts of excluded irregular lessons, unknown-teacher lessons, teachers below
   the threshold and lessons with unmapped school years.
 
-The report measures **timetable cancellations**. For official teacher absence
-records and reasons, see the separate
-[WebUntis Platform specifications](../../specs/untis-platform/README.md).
-UntisPlus Proxy does not expose those Platform absence operations. A personal report covers lessons visible in
+These are **timetable cancellation statistics**, not verified physical teacher
+attendance or reasons for absence. A personal report covers lessons visible in
 that caller's timetable; an approved teacher-source report covers only what the
 saved source exposes. Rank is a numerical ordering, not a performance judgement.
 
 Anonymisation is report-local pseudonymisation: teacher names become `Teacher N`
 and teacher IDs are omitted. Subjects and cover teachers use report-local
-labels in detailed and export fields. Exclusion prefixes are omitted from anonymous
+labels in all detailed and export fields. Exclusion prefixes are omitted from anonymous
 metadata. Dates and statistical patterns remain, so this is not a guarantee of
 irreversible anonymisation. No credentials, source-account identity, class IDs,
 profile IDs or raw lesson bodies are returned.
 
 ## Smoke test from a terminal
 
-Use the [smoke script from the proxy repository](https://github.com/UntisPlus/UntisPlus-Proxy/blob/dev/scripts/test-teacher-cancellations.py). Run the command below from that checkout.
-
 Run `python3 scripts/test-teacher-cancellations.py USERNAME` for the last seven
 completed days on beta. Enter the current WebUntis authenticator code when
 prompted. The script keeps the resulting proxy session in memory and prints
 pseudonymised totals. Use `--from YYYY-MM-DD --to YYYY-MM-DD` to choose dates or
-`--json` to see the full report. Add `--show-names` when you want teacher
-and subject names in the terminal.
+`--json` to see the full report. Add `--show-names` when you want actual teacher
+and subject names in your terminal output.
 
 Personal mode needs the analytics switch and `analytics.personal.view`. For
 queries of up to 31 days, the script uses the fresh code for sign-in and the
-personal timetable request. Add `--saved-source` to compare the account's saved
-replay credential. Longer reports use the saved credential, and both paths use
-a fresh code for proxy sign-in.
+personal timetable request. Add `--saved-source` to use the account's saved
+replay credential for the timetable read. Longer reports always use the saved
+credential. The sign-in prompt still asks for a fresh code in either case.
 Add `--teacher-id ID` for an approved teacher target. This mode needs
 `analytics.teacher.view`, the explicit target ID, and an eligible saved teacher
 source. The source account is used for timetable reads.
@@ -236,7 +247,7 @@ The script labels errors by stage. Use the stage to decide what to check:
 | --- | --- |
 | `Sign-in failed` | Use the login for the selected school and a fresh code. Use `--school` if it differs from the server default. |
 | `Sign-in was blocked by Cloudflare (error 1010)` | Update to the current script, which identifies itself as the UntisPlus analytics client. If it recurs, check the Cloudflare settings for the beta host. |
-| `Analytics returned HTTP 403` | Sign-in succeeded. Enable Analytics under **Permissions → Feature switches & login rules**, then assign a group with `analytics.personal.view` or `analytics.teacher.view` as appropriate. For a teacher query, approve that teacher ID. Check the school and server gates if access is still denied. |
+| `Analytics returned HTTP 403` | Sign-in succeeded. Check the Analytics switch, the capability for the target type, the account's approved targets, and whether the requested source is available. |
 | Partial or empty report, exit code 2 | Use `--json` to inspect the coverage windows and try a known teaching week. Check saved source credentials for unavailable windows. |
 
 A one-time-code-only sign-in can establish a session even when no reusable
@@ -308,6 +319,14 @@ to list targets and school years. Use `--student-id`, `--class-id`,
 `--teacher-id`, or `--room` to select a target. For a slice of one school
 year, use `--school-year` and supply `--from` or `--to` within its dates.
 
+For a large catalog, use `jq` to show only the relevant entries and their
+permitted sources:
+
+```bash
+python3 scripts/test-teacher-cancellations.py YOUR_USERNAME --options |
+  jq '.targets[] | select((.mode == "teacher" and .id == 42) or (.mode == "room" and .name == "R101"))'
+```
+
 ### Compare teachers and school years
 
 In **Permissions → Analytics data scope configuration**, choose the school
@@ -336,8 +355,12 @@ its own selection. Omit `--show-names` to use report-local labels.
 
 ### Example chart dashboard
 
-Use the saved personal report to build a dashboard with a timing view and
-separate tabs for teachers, subjects, and covers. Use the same rows for the
+Use a saved personal, teacher, or room report to build a dashboard with a
+timing view and separate tabs for teachers, subjects, and covers. Show the
+target, date range, `dataSource`, and coverage beside the charts. A teacher
+breakdown from a personal report represents that teacher's assignments on the
+caller’s timetable. A teacher report covers the selected teacher's upstream
+timetable. A room report covers periods on that room's timetable. Use the same rows for the
 bars and an expandable data table under each chart, so readers can see exact
 counts alongside the visual ranking.
 
@@ -402,7 +425,8 @@ Keep report-local labels in examples you intend to share.
 
 - `teachers.csv`: totals, rank and rates;
 - `weekday.csv`, `week.csv`, `school-year.csv`: aggregate and teacher breakdowns;
-- `missed-teachers.csv`, `missed-subjects.csv`, `cover-teachers.csv`: ranked breakdowns;
+- `missed-teachers.csv`, `missed-subjects.csv`, `cover-teachers.csv`: ranked
+  breakdowns by affected period;
 - `lesson-changes.csv` and `covers.csv`: period details and cover pairs;
 - `report.json`: complete report, filters, definitions, warnings and coverage.
 
@@ -490,6 +514,8 @@ when both scopes restrict access. No upstream account changes are involved.
 
 Coverage is in `internal/analytics/report_test.go`,
 `internal/store/feature_controls_test.go`, `internal/proxy/analytics_test.go`,
+`internal/proxy/analytics_options_test.go`, `internal/proxy/analytics_years_test.go`,
+`scripts/check-analytics-cli.py`,
 `internal/proxy/permission_controls_test.go`,
 `internal/untis/admission_metadata_test.go`, and `scripts/check-admin-ui.js`.
 Real teacher writes are never used for tests. Live school-year retention and

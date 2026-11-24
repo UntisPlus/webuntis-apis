@@ -143,8 +143,8 @@ browser requests must be same-origin.
 | `/admin/access/features?school=NAME` | GET, PUT | List or update master or school feature switches |
 | `/admin/access/admission?school=NAME` | GET, PUT | Account-type login policy |
 | `/admin/access/preview` | POST | Preview permission changes without saving |
-| `/admin/access/analytics-access?school=NAME&user=USERNAME` | GET, PUT | Approved teachers and class-history profiles |
-| `/admin/access/analytics-years?school=NAME` | GET, PUT | School-year date boundaries |
+| `/admin/access/analytics-access?school=NAME&user=USERNAME` | GET, PUT | Approved teachers, students, classes, rooms, and class-history profiles |
+| `/admin/access/analytics-years?school=NAME` | GET, POST, PUT | Read saved dates, preview dates from upstream, or save reviewed school years |
 | `/admin/access/default-group-policy?school=NAME&user=USERNAME` | GET, PUT | Inheritance switch and excluded default groups |
 | `/admin/access/apply-basic?school=NAME&user=USERNAME` | POST | Apply the confirmed upstream-only Basic reset |
 | `/admin/access/compatibility?school=NAME&user=USERNAME` | GET | Stored metadata and credential presence |
