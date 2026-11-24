@@ -111,7 +111,9 @@ See the [OpenAPI contract](../../specs/untisplus-proxy/analytics-and-csv.yaml).
 
 Dates are inclusive. The current-day and future cutoff uses UTC. A request
 covers at most 366 days. Personal reports use up to 53 upstream windows of
-at most seven days each. Teacher and class-history reports use up to 32
+at most seven days each. For reports of at least a week, a short final window
+uses a full week within the requested range. Only its assigned dates are
+counted. Teacher and class-history reports use up to 32
 upstream windows of at most 31 days each. A one-day personal query may read
 nearby dates and includes only the requested day in the report. Personal history has no
 proxy retention cutoff back to practical historical dates (1900 or later), but
