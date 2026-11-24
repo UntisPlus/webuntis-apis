@@ -1,0 +1,254 @@
+openapi: 3.0.3
+info:
+  title: UntisPlus Proxy analytics and mapped CSV
+  version: '1'
+  description: >
+    UntisPlus Proxy extensions. Use the origin of your proxy.
+    The prose reference covers the rest of the proxy API and permission setup.
+servers:
+  - url: /
+security:
+  - ProxySession: []
+paths:
+  /api/analytics/teacher-cancellations:
+    post:
+      operationId: reportTeacherCancellations
+      summary: Report timetable cancellations
+      description: >
+        Reads approved upstream timetable windows. Requires the Analytics feature
+        and a capability for the requested source. Export formats additionally
+        require analytics.export. The report does not establish physical attendance.
+      parameters:
+        - $ref: '#/components/parameters/School'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+      responses:
+        '200':
+          description: JSON report or CSV ZIP, according to the requested format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+            application/zip:
+              schema: {type: string, format: binary}
+        '400': {description: Invalid dates, filters, or report mode}
+        '401': {description: Proxy session required}
+        '403': {description: School, feature, source, target, or export access denied}
+        '429': {description: Account report limit or busy analytics workers}
+        '500': {description: Report configuration or server error}
+  /api/admin/events/import:
+    post:
+      operationId: importMappedCsv
+      summary: Inspect, preview, or apply a mapped CSV import
+      description: >
+        Documents the mapped-csv mode. This handler also accepts legacy exports.
+        Event imports require events.technik.import; absence imports require
+        events.technik.attendance.write. Dashboard administrators may manage
+        imports within server gates. All writes are local to the proxy.
+      parameters:
+        - $ref: '#/components/parameters/School'
+        - name: format
+          in: query
+          required: true
+          schema: {type: string, enum: [mapped-csv]}
+        - name: destination
+          in: query
+          required: true
+          schema: {type: string, enum: [events, absences]}
+        - name: phase
+          in: query
+          required: true
+          schema: {type: string, enum: [columns, preview, apply]}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CsvRequest'
+      responses:
+        '200':
+          description: Column sample, validation preview, or apply counts for the requested phase
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CsvColumns'
+                  - $ref: '#/components/schemas/CsvPreview'
+                  - $ref: '#/components/schemas/CsvApplied'
+        '400': {description: Invalid CSV, mapping, or rows that need correction}
+        '401': {description: Proxy session required}
+        '403': {description: Import not permitted}
+        '500': {description: Storage or server error. An interrupted apply can have saved rows.}
+components:
+  securitySchemes:
+    ProxySession:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
+  parameters:
+    School:
+      name: school
+      in: query
+      schema: {type: string}
+      description: Select the school. Omit to use the endpoint's normal school selection.
+  schemas:
+    ReportRequest:
+      type: object
+      additionalProperties: false
+      description: Supply an explicit from/to range or select a configured schoolYear.
+      properties:
+        mode: {type: string, enum: [personal, teacher, class-history], default: personal}
+        from: {type: string, format: date}
+        to: {type: string, format: date}
+        teacherId: {type: integer, format: int64, minimum: 0}
+        profileId: {type: string}
+        schoolYear: {type: string}
+        minLessons: {type: integer, minimum: 0, maximum: 100000, default: 0}
+        anonymise: {type: boolean, default: false}
+        format: {type: string, enum: [json, export-json, csv-zip], default: json}
+        includeIrregular: {type: boolean, default: false}
+        excludeTeacherPrefixes:
+          type: array
+          maxItems: 20
+          items: {type: string}
+    Counts:
+      type: object
+      required: [scheduled, cancelled, notCancelled, cancellationRate, notCancelledRate]
+      properties:
+        scheduled: {type: integer, minimum: 0}
+        cancelled: {type: integer, minimum: 0}
+        notCancelled: {type: integer, minimum: 0}
+        cancellationRate: {type: number, nullable: true, minimum: 0, maximum: 100}
+        notCancelledRate: {type: number, nullable: true, minimum: 0, maximum: 100}
+    Bucket:
+      allOf:
+        - $ref: '#/components/schemas/Counts'
+        - type: object
+          required: [key]
+          properties:
+            key: {type: string}
+    Buckets:
+      type: array
+      nullable: true
+      items:
+        $ref: '#/components/schemas/Bucket'
+    Teacher:
+      allOf:
+        - $ref: '#/components/schemas/Counts'
+        - type: object
+          required: [name, rank, byWeekday, byWeek, bySchoolYear, worstWeekdays]
+          properties:
+            id: {type: string, description: Omitted when anonymise is true}
+            name: {type: string}
+            rank: {type: integer, minimum: 1}
+            byWeekday: {$ref: '#/components/schemas/Buckets'}
+            byWeek: {$ref: '#/components/schemas/Buckets'}
+            bySchoolYear: {$ref: '#/components/schemas/Buckets'}
+            worstWeekdays:
+              type: array
+              nullable: true
+              items: {type: string}
+    Report:
+      type: object
+      required: [version, reportId, source, from, to, complete, anonymised, windows, warnings, teachers, teacherAssignmentTotals, uniqueLessons]
+      properties:
+        version: {type: string}
+        reportId: {type: string}
+        source: {type: string, enum: [personal, teacher, class-history]}
+        from: {type: string, format: date}
+        to: {type: string, format: date}
+        generatedAt: {type: string, format: date-time}
+        complete: {type: boolean}
+        anonymised: {type: boolean}
+        windows:
+          type: array
+          items:
+            type: object
+            required: [from, to, status]
+            properties:
+              from: {type: string, format: date}
+              to: {type: string, format: date}
+              status: {type: string}
+        warnings:
+          type: array
+          items: {type: string}
+        definitions:
+          type: object
+          additionalProperties: {type: string}
+        minLessons: {type: integer}
+        includeIrregular: {type: boolean}
+        excludeTeacherPrefixes:
+          type: array
+          items: {type: string}
+        teachers:
+          type: array
+          items: {$ref: '#/components/schemas/Teacher'}
+        teacherAssignmentTotals: {$ref: '#/components/schemas/Counts'}
+        uniqueLessons: {type: integer, minimum: 0}
+        meanTeacherNotCancelledRate: {type: number, nullable: true}
+        byWeekday: {$ref: '#/components/schemas/Buckets'}
+        byWeek: {$ref: '#/components/schemas/Buckets'}
+        bySchoolYear: {$ref: '#/components/schemas/Buckets'}
+        excludedIrregularLessons: {type: integer, minimum: 0}
+        excludedUnknownTeacherLessons: {type: integer, minimum: 0}
+        filteredTeachers: {type: integer, minimum: 0}
+        unmappedSchoolYearLessons: {type: integer, minimum: 0}
+    CsvRequest:
+      type: object
+      required: [text, delimiter, header, first]
+      properties:
+        text: {type: string, description: Decoded CSV with at most 501 records and 100 columns}
+        delimiter: {type: string, enum: [',', ';', "\t", '|']}
+        header: {type: integer, minimum: 0, description: One-based heading record or zero if absent}
+        first: {type: integer, minimum: 1, description: First data record}
+        dateFormat: {type: string, enum: ['', '2006-01-02', '02.01.2006', '2/1/2006', '1/2/2006', '20060102']}
+        fields:
+          type: object
+          description: Maps destination fields to a CSV column or a fixed value.
+          additionalProperties:
+            type: object
+            properties:
+              column: {type: integer, minimum: 0, maximum: 100, description: One-based column index or zero for fixed text}
+              value: {type: string, description: Fixed text if column is absent or zero}
+    CsvColumns:
+      type: object
+      required: [columns, sample]
+      properties:
+        columns:
+          type: array
+          items: {type: string}
+        sample:
+          type: array
+          items: {type: string}
+    CsvPreview:
+      type: object
+      required: [rows, errors]
+      properties:
+        errors: {type: integer, minimum: 0}
+        rows:
+          type: array
+          items:
+            type: object
+            required: [line, student, date, start, end, title]
+            properties:
+              line: {type: integer, minimum: 1}
+              student: {type: string}
+              date: {type: string, description: Normalized date or empty for invalid input}
+              start: {type: string}
+              end: {type: string}
+              title: {type: string}
+              room: {type: string}
+              subject: {type: string}
+              teacher: {type: string}
+              description: {type: string}
+              error: {type: string, description: Present for a row that needs correction}
+    CsvApplied:
+      type: object
+      required: [changed, skipped]
+      properties:
+        changed: {type: integer, minimum: 0}
+        skipped: {type: integer, minimum: 0}

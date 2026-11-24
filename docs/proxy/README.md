@@ -51,6 +51,8 @@ WebUntis APIs it forwards are documented in [`../`](../README.md).
 | [12 — CSV imports](12-csv-import.md) | Mapping and preview for events and local attendance |
 | [13 — Basic and compatibility](13-basic-and-compatibility.md) | Upstream-only Basic, inheritance exceptions and diagnostics |
 
+[OpenAPI for cancellation reports and mapped CSV](../../specs/untisplus-proxy/analytics-and-csv.yaml)
+
 ## Login: the proxy's own auth
 
 The proxy does not change how you authenticate to WebUntis — it accepts the

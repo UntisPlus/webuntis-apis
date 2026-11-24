@@ -14,6 +14,7 @@ complete reference.
 | [`untis-extern/untis-extern-timetable-api-v3.yaml`](untis-extern/untis-extern-timetable-api-v3.yaml) | 🟢 Untis GmbH | External Timetable API v1/v2/v3 |
 | [`untis-extern/schemas/error/`](untis-extern/schemas/error) | 🟢 Untis GmbH | Error schemas for the external timetable API |
 | [`untis-platform/*.yaml`](untis-platform/README.md) | 🟢 Untis GmbH | Full OpenAPI specs for all 15 Untis Platform APIs |
+| [UntisPlus Proxy analytics and CSV](untisplus-proxy/analytics-and-csv.yaml) | 🔴 UntisPlus Proxy | Session-authenticated cancellation reports and mapped CSV |
 
 > The public JSON-RPC method set is documented **in full** in
 > [`docs/04-jsonrpc-public.md`](../docs/04-jsonrpc-public.md), so you don't need

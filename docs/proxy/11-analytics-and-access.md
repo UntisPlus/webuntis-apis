@@ -74,6 +74,8 @@ importer.
 
 ## JSON endpoint
 
+See the [OpenAPI contract](../../specs/untisplus-proxy/analytics-and-csv.yaml).
+
 `POST /api/analytics/teacher-cancellations?school=NAME` requires a proxy
 `JSESSIONID` session for an admitted account of that school. The body accepts:
 

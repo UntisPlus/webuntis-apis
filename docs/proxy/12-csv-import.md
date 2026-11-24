@@ -59,6 +59,8 @@ slots and skips identical absence records.
 
 ## API and permissions
 
+See the [OpenAPI contract](../../specs/untisplus-proxy/analytics-and-csv.yaml).
+
 Send JSON to
 `POST /api/admin/events/import?format=mapped-csv&school=NAME&destination=events&phase=preview`
 with an authenticated proxy session. Set `destination` to `events` or
