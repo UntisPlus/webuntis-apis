@@ -127,7 +127,9 @@ The JSON includes `version`, a report-local `reportId`, source mode, dates,
 `complete` means all requested approved windows were read and the class-history
 range has no gaps. It cannot establish that upstream retained every historical
 lesson; the response states this limitation. Unreadable windows are partial data,
-not successful zero-cancellation observations. Empty denominators have null rates.
+not successful zero-cancellation observations. Newer builds include an unavailable window's
+`reason`, covering source authentication, upstream rejection or transport/HTTP
+failures, and invalid timetable responses. Empty denominators have null rates.
 
 Statistics include:
 
