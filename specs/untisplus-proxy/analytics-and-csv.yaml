@@ -193,6 +193,21 @@ components:
           items: {$ref: '#/components/schemas/Teacher'}
         teacherAssignmentTotals: {$ref: '#/components/schemas/Counts'}
         uniqueLessons: {type: integer, minimum: 0}
+        cancelledLessons: {type: integer, minimum: 0}
+        coveredLessons: {type: integer, minimum: 0}
+        clashingLessons: {type: integer, minimum: 0}
+        lessonChanges:
+          type: array
+          items: {$ref: '#/components/schemas/LessonChange'}
+        missedTeachers:
+          type: array
+          items: {$ref: '#/components/schemas/ChangeCount'}
+        missedSubjects:
+          type: array
+          items: {$ref: '#/components/schemas/ChangeCount'}
+        coverTeachers:
+          type: array
+          items: {$ref: '#/components/schemas/ChangeCount'}
         meanTeacherNotCancelledRate: {type: number, nullable: true}
         byWeekday: {$ref: '#/components/schemas/Buckets'}
         byWeek: {$ref: '#/components/schemas/Buckets'}
@@ -201,6 +216,48 @@ components:
         excludedUnknownTeacherLessons: {type: integer, minimum: 0}
         filteredTeachers: {type: integer, minimum: 0}
         unmappedSchoolYearLessons: {type: integer, minimum: 0}
+    ElementReference:
+      type: object
+      required: [name]
+      properties:
+        id: {type: string, description: Omitted when anonymise is true}
+        name: {type: string}
+    CoverPair:
+      type: object
+      required: [original, teacher]
+      properties:
+        original: {$ref: '#/components/schemas/ElementReference'}
+        teacher: {$ref: '#/components/schemas/ElementReference'}
+    ChangeCount:
+      allOf:
+        - $ref: '#/components/schemas/ElementReference'
+        - type: object
+          required: [lessons, cancelled, covered]
+          properties:
+            lessons: {type: integer, minimum: 0}
+            cancelled: {type: integer, minimum: 0}
+            covered: {type: integer, minimum: 0}
+    LessonChange:
+      type: object
+      required: [date, cancelled, clash, subjects, missedTeachers, covers]
+      properties:
+        date: {type: string, format: date}
+        start: {type: string, description: Source wall-clock time in HH:MM}
+        end: {type: string, description: Source wall-clock time in HH:MM}
+        cancelled: {type: boolean}
+        clash:
+          type: string
+          enum: [overlap_observed, no_overlap_observed, unknown]
+          description: An observed overlap alone does not identify the reason for cancellation.
+        subjects:
+          type: array
+          items: {$ref: '#/components/schemas/ElementReference'}
+        missedTeachers:
+          type: array
+          items: {$ref: '#/components/schemas/ElementReference'}
+        covers:
+          type: array
+          items: {$ref: '#/components/schemas/CoverPair'}
     CsvRequest:
       type: object
       required: [text, delimiter, header, first]
