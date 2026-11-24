@@ -133,9 +133,8 @@ lesson; the response states this limitation. Unreadable windows are partial data
 not successful zero-cancellation observations. Newer builds include an unavailable window's
 `reason`, covering source authentication, upstream rejection or transport/HTTP
 failures, and invalid timetable responses. A rejected JSON-RPC response may
-include the numeric `upstreamCode`. One-day personal requests may retry once
-with a nearby timetable range while keeping results limited to the requested
-day. Known authentication or access denials skip this retry. Empty denominators have null rates.
+include the numeric `upstreamCode`. One-day personal requests use a mobile-sized
+upstream window while keeping results limited to the requested day. Empty denominators have null rates.
 
 Statistics include:
 
@@ -201,7 +200,9 @@ and subject names in the terminal.
 
 Personal mode needs the analytics switch and `analytics.personal.view`. For
 queries of up to 31 days, the script uses the fresh code for sign-in and the
-personal timetable request. Longer reports use the saved account credential.
+personal timetable request. Add `--saved-source` to compare the account's saved
+replay credential. Longer reports use the saved credential, and both paths use
+a fresh code for proxy sign-in.
 Add `--teacher-id ID` for an approved teacher target. This mode needs
 `analytics.teacher.view`, the explicit target ID, and an eligible saved teacher
 source. The source account is used for timetable reads.
