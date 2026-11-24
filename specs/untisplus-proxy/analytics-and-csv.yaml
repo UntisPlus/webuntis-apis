@@ -109,6 +109,11 @@ components:
         schoolYear: {type: string}
         minLessons: {type: integer, minimum: 0, maximum: 100000, default: 0}
         anonymise: {type: boolean, default: false}
+        personalOtp:
+          type: string
+          pattern: '^[0-9]{6}$'
+          writeOnly: true
+          description: Optional fresh WebUntis code for the signed-in account's personal report of up to 31 days. It is never persisted.
         format: {type: string, enum: [json, export-json, csv-zip], default: json}
         includeIrregular: {type: boolean, default: false}
         excludeTeacherPrefixes:

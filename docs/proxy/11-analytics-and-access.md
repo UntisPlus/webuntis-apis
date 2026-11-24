@@ -105,6 +105,9 @@ See the [OpenAPI contract](../../specs/untisplus-proxy/analytics-and-csv.yaml).
   disables these name-prefix exclusions. Lessons without usable teacher IDs are
   excluded and counted separately.
 - `format`: `json`, `export-json` (attachment), or `csv-zip` (attachment).
+- `personalOtp`: optional six-digit code for the signed-in account's personal
+  report of up to 31 days. It is used only for that upstream read and is
+  never saved or returned. Requests without a code use the saved source.
 
 Dates are inclusive; the current-day/future cutoff uses UTC. A request covers at most 366 days and 32 source windows;
 upstream requests are split into at most 31-day chunks. Personal history has no
@@ -196,9 +199,9 @@ pseudonymised totals. Use `--from YYYY-MM-DD --to YYYY-MM-DD` to choose dates or
 `--json` to see the full report. Add `--show-names` when you want teacher
 and subject names in the terminal.
 
-Personal mode needs the analytics switch, `analytics.personal.view`, and saved
-replay credentials for the account. A one-time code signs the script in.
-The server uses its saved source credentials to retrieve timetable data.
+Personal mode needs the analytics switch and `analytics.personal.view`. For
+queries of up to 31 days, the script uses the fresh code for sign-in and the
+personal timetable request. Longer reports use the saved account credential.
 Add `--teacher-id ID` for an approved teacher target. This mode needs
 `analytics.teacher.view`, the explicit target ID, and an eligible saved teacher
 source. The source account is used for timetable reads.
