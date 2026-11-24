@@ -10,6 +10,21 @@ servers:
 security:
   - ProxySession: []
 paths:
+  /api/analytics/options:
+    get:
+      operationId: listAnalyticsOptions
+      summary: List approved report targets, sources and school years
+      parameters:
+        - $ref: '#/components/parameters/School'
+      responses:
+        '200':
+          description: Options available to the signed-in account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsOptions'
+        '401': {description: Proxy session required}
+        '403': {description: Analytics disabled or school access denied}
   /api/analytics/teacher-cancellations:
     post:
       operationId: reportTeacherCancellations
@@ -96,19 +111,54 @@ components:
       schema: {type: string}
       description: Select the school. Omit to use the endpoint's normal school selection.
   schemas:
+    AnalyticsOptions:
+      type: object
+      required: [school, schoolYears, targets]
+      properties:
+        school: {type: string}
+        schoolYears:
+          type: array
+          items:
+            type: object
+            required: [name, from, to]
+            properties:
+              name: {type: string}
+              from: {type: string, format: date}
+              to: {type: string, format: date}
+        targets:
+          type: array
+          items:
+            type: object
+            required: [mode, name, dataSources]
+            properties:
+              mode: {type: string, enum: [personal, teacher, student, class, room, class-history]}
+              name: {type: string}
+              id: {type: integer, format: int64}
+              profileId: {type: string}
+              dataSources:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnalyticsDataSource'
+    AnalyticsDataSource:
+      type: string
+      enum: [personal, own-teacher, saved-teacher, shared-class, reconstruction]
     ReportRequest:
       type: object
       additionalProperties: false
       description: Supply an explicit from/to range or select a configured schoolYear.
       properties:
-        mode: {type: string, enum: [personal, teacher, room, class-history], default: personal}
+        mode: {type: string, enum: [personal, teacher, student, class, room, class-history], default: personal}
         from: {type: string, format: date}
         to: {type: string, format: date}
         teacherId: {type: integer, format: int64, minimum: 0}
+        studentId: {type: integer, format: int64, minimum: 1}
+        classId: {type: integer, format: int64, minimum: 1}
+        dataSource:
+          $ref: '#/components/schemas/AnalyticsDataSource'
         room:
           type: string
           maxLength: 120
-          description: Exact upstream room name or numeric room ID. Required in room mode, which uses the signed-in teacher's saved credential and own upstream access.
+          description: Exact upstream room name or numeric room ID. Required in room mode. A saved teacher can read through their own upstream access. An administrator with an approved room can use an eligible saved teacher in the same school.
         profileId: {type: string}
         schoolYear: {type: string}
         minLessons: {type: integer, minimum: 0, maximum: 100000, default: 0}
@@ -167,7 +217,9 @@ components:
       properties:
         version: {type: string}
         reportId: {type: string}
-        source: {type: string, enum: [personal, teacher, room, class-history]}
+        source: {type: string, enum: [personal, teacher, student, class, room, class-history]}
+        dataSource:
+          $ref: '#/components/schemas/AnalyticsDataSource'
         room: {type: string, description: Room selector in a named room report.}
         from: {type: string, format: date}
         to: {type: string, format: date}

@@ -74,7 +74,11 @@ importer.
 
 ## JSON endpoint
 
-See the [OpenAPI contract](../../specs/untisplus-proxy/analytics-and-csv.yaml).
+`GET /api/analytics/options?school=NAME` lists the signed-in account's
+permitted targets and sources and the school's configured year names and
+dates. It reads configuration without fetching timetables. Use each target's
+`mode` and ID or room name to build a report request. The report endpoint
+rechecks access independently of discovery.
 
 `POST /api/analytics/teacher-cancellations?school=NAME` requires a proxy
 `JSESSIONID` session for an admitted account of that school. The body accepts:
@@ -90,9 +94,21 @@ See the [OpenAPI contract](../../specs/untisplus-proxy/analytics-and-csv.yaml).
 }
 ```
 
-- `mode`: `personal` (default), `teacher`, `room`, or `class-history`.
+- `mode`: `personal` (default), `teacher`, `student`, `class`, `room`, or `class-history`.
 - `teacherId`: required and approved for teacher mode; optional as a filter of
   teachers appearing in personal/class-history data. It never widens that scope.
+- `room`: required in room mode. Use the exact upstream room name or numeric
+  room ID. A teacher with `analytics.teacher.view` can use their own saved
+  account and upstream access. A dashboard administrator with the same grant
+  can use an eligible saved teacher in the same school for approved rooms.
+- `studentId`: required for student mode. The target needs individual approval
+  and the caller needs the student analytics grant.
+- `classId`: required for class mode. Select your accessible class or a class
+  approved for your account. Class mode requires the class-history analytics grant.
+- `dataSource`: optional. Use one of the values returned by discovery, such as
+  `personal`, `saved-teacher`, `own-teacher`, `shared-class`, or
+  `reconstruction`. Reconstruction uses only accessible shared classes and
+  applies to permitted teachers or rooms. The response names the source used.
 - `profileId`: required for class-history mode; ignored profiles cannot be
   supplied in personal/teacher mode.
 - `schoolYear`: optional configured year name; fills omitted from/to and rejects
@@ -105,17 +121,19 @@ See the [OpenAPI contract](../../specs/untisplus-proxy/analytics-and-csv.yaml).
   disables these name-prefix exclusions. Lessons without usable teacher IDs are
   excluded and counted separately.
 - `format`: `json`, `export-json` (attachment), or `csv-zip` (attachment).
-- `personalOtp`: optional six-digit code for the signed-in account's personal
-  report of up to 31 days. It is used only for that upstream read and is
-  never saved or returned. Requests without a code use the saved source.
+- `personalOtp`: optional six-digit WebUntis code for a personal report of up
+  to 31 days. The proxy uses it for the same signed-in account's timetable read
+  without saving or returning it. Normal session and capability checks still
+  apply. Omit it to use saved source credentials.
 
 Dates are inclusive. The current-day and future cutoff uses UTC. A request
 covers at most 366 days. Personal and teacher reports use up to 53 upstream windows of
 at most seven days each. For reports of at least a week, a short final window
 uses a full week within the requested range. Only its assigned dates are
 counted. Class-history reports use up to 32
-upstream windows of at most 31 days each. A one-day personal query may read
-nearby dates and includes only the requested day in the report. Personal history has no
+upstream windows of at most 31 days each. A one-day personal query
+reads up to seven nearby dates from the same timetable in a single upstream
+request and reports only the requested date. Personal history has no
 proxy retention cutoff back to practical historical dates (1900 or later), but
 requires the extra history grant for older dates. Request multiple ranges to
 cover multiple years. Upstream may not retain or expose old data. Future days
@@ -269,6 +287,26 @@ example, to save room 14-05 over an explicit date range:
 You can use `--school-year` instead of the date flags once the school year
 has been saved. Use a numeric room ID if the room name is ambiguous.
 Room reports describe cancellations on the room's upstream timetable.
+
+To run both reports from a dashboard administrator account, select that
+account under **Permissions → Analytics data scope configuration**. Approve
+the teacher ID and add the room under **Approved rooms for this admin**. The
+admin needs `analytics.teacher.view` and the school needs a saved teacher
+account eligible to share. The admin's one-time code signs into the proxy.
+The proxy uses the saved teacher's identity for timetable reads.
+
+```bash
+python3 scripts/test-teacher-cancellations.py YOUR_ADMIN_USERNAME \
+  --teacher-id 42 --room 'R101' --from 2026-08-01 --to 2026-11-23 \
+  --json --show-names
+```
+
+The output contains one report per target under `reports`.
+
+Run `python3 scripts/test-teacher-cancellations.py YOUR_USERNAME --options`
+to list targets and school years. Use `--student-id`, `--class-id`,
+`--teacher-id`, or `--room` to select a target. For a slice of one school
+year, use `--school-year` and supply `--from` or `--to` within its dates.
 
 ### Compare teachers and school years
 
