@@ -1,87 +1,37 @@
 # 01 — How it works & permissions
 
-The proxy exists because WebUntis is **per-user**: a student sees only their own
-timetable and a teacher only theirs. Rather than escalate privileges, the proxy
-pools what users already have and reconstructs the rest.
+WebUntis upstream applies the rights of the authenticated school account.
+UntisPlus can add timetable pooling, reconstruction and scoped use of saved
+teacher sources. The proxy checks local capabilities before using these sources.
 
-## The four mechanisms
+## Effective access
 
-### 1. Pooling
+Use **Permissions** in the dashboard to create capability groups and assign them
+to people. Groups stack, and role or everyone defaults also apply unless
+excluded for a person. A direct account rule takes precedence over groups.
+Server gates and feature switches set the ceiling. A school cannot re-enable
+a server-disabled feature. Dashboard administrator status and upstream account
+roles are separate from these timetable capabilities.
 
-Every user automatically donates **their class** to the pool on login — student
-and non-student alike. The pool is the union of all donated classes, and each
-pooled class is fetched with its owner's student key. A class is in the pool as
-soon as any user belongs to it (`class_id` set).
+| Purpose | Current controls |
+| --- | --- |
+| Use upstream as the logged-in account | The upstream-only Basic preset and `timetable.upstream.view` |
+| Donate a class | `pool.timetable.share` |
+| Browse or read pooled classes | `pool.class.view` and `timetable.class.pooled.view` |
+| Reconstruct a timetable | Separate teacher, room and subject reconstruction capabilities |
+| Use a saved teacher source | Separate class, teacher, room, subject and personal timetable capabilities |
+| Modify upstream records | Separate absence and lesson write capabilities, subject to source account restrictions |
+| Manage Technik events and attendance | Individually granted actions described in [11](11-analytics-and-access.md#separate-technik-actions) |
 
-The result: any pool member can read any pooled class's timetable, with no
-per-user WebUntis grant needed.
+The [Basic preset](13-basic-and-compatibility.md) is an explicit upstream-read
+baseline. Assign it additively or use the confirmed reset to replace the
+person's direct permissions and disable inherited defaults.
 
-### 2. Reconstruction (`recon`)
-
-A teacher, room or subject timetable is not stored anywhere by WebUntis. The
-proxy *reconstructs* it by scanning the pooled classes and collecting every
-period where that element appears. The reached date is persisted per class, so a
-restart resumes rather than restarting; a class is re-scanned once its stored
-horizon is more than `-recon-refresh` days (default `21`) behind the target.
-
-This is what the **`recon`** permission grants.
-
-### 3. Forwarding (`boosted`)
-
-Where reconstruction is not wanted, a request can instead be re-authenticated as
-a **saved teacher account** and forwarded raw — no reconstruction. This is what
-the **`boosted`** permission grants. A boosted user's own personal (STUDENT)
-timetable is served the same way, giving it teacher-grade visibility (e.g.
-unlimited future weeks). Boosted alone grants **no** write powers. If no teacher
-account is saved, boosted falls back to Basic.
-
-### 4. Change detection
-
-Every `-poll-interval` (default `60s`) the proxy re-fetches each pooled class,
-diffs it against the last stored snapshot, and bumps a per-class version. Diffs
-are persisted and fanned out to the [change stream](03-change-detection.md),
-[webhooks and ntfy](04-notifications.md).
-
-## Permission tiers
-
-Access is a set of per-user flags on top of a Basic default.
-
-| Tier | Flag | Scope | What you get |
-|---|---|---|---|
-| **Basic** | *(none)* | everyone | Pooled classes + your own personal student timetable + reading your own absences |
-| **Reconstruction** | `recon` | global switch or per-user | Teacher / room / subject timetables reconstructed 100% from pooled class data |
-| **Boosted** | `boosted` | per-user only | Class/teacher/room/subject timetables raw-forwarded through a saved teacher account |
-| **Editor** | `editor` | per-user only | Boosted **plus editing**: unlocks absence + lesson/subject write methods; runs class-scoped editor calls as the boosted teacher |
-| **Techniker** | `techniker` | per-user only | Sees a synthetic **Technik** class aggregating every student's admin-authored events, plus a proxy-local absence register |
-
-Rules:
-
-- **Boosted XOR Recon** — the flags are mutually exclusive per user; granting
-  one auto-revokes the other.
-- **`editor` implies `boosted`.** Holding `editor` alone is enough.
-- **`boosted`, `editor` and `techniker` are per-user only** (no `--global`),
-  because each grants access to data pooled from several accounts.
-- **Being a proxy admin does not imply editing.** Admins manage accounts; they
-  do not write to Untis unless they hold `editor`.
-- Absence **reads** (`getStudentAbsences2017`) are available to everyone by
-  default; only the **write/mutation** methods need `editor`.
-
-Grant/revoke from the [dashboard](08-admin-api.md) *Users* section or with
-[`untisctl perms`](10-untisctl.md).
-
-### Reading the effective level
-
-```
-GET /me
-```
-
-```json
-{"username":"Jdoe","level":"recon",
- "permissions":{"recon":true,"boosted":false,"editor":false}}
-```
-
-`level` is one of `basic`, `recon`, `boosted`, `boosted+editor`. Requires a
-session; `401 {"error":"not logged in"}` otherwise.
+`GET /me` requires the caller's own session and exposes the legacy level and
+flags for clients that use them. Administrators can inspect effective
+capabilities for an account with `GET /admin/access/effective?school=NAME&user=USERNAME`.
+Legacy Basic/Recon/Boosted/Editor/Techniker flags are compatibility shorthands.
+Use capability groups for new configurations.
 
 ## Why the editor needs a teacher identity
 
@@ -98,14 +48,13 @@ authenticates as a teacher**. The identical call as a student comes back empty:
 | `can` | `READ_HOMEWORK`, `READ_PERIODINFO` | includes `READ_STUD_ABSENCE`, `WRITE_STUD_ABSENCE`, `READ/WRITE_CLASSREGEVENT`, … |
 
 So the proxy re-authenticates the **class-scoped methods** (`getPeriodData2017`
-plus the absence/lesson writes) as the boosted teacher for users holding
-`editor`, on both the self-authenticating `jsonrpc_intern.do` path and the
+plus the absence/lesson writes) as the boosted teacher when the caller has the applicable class-scoped capability, on both the self-authenticating `jsonrpc_intern.do` path and the
 session `jsonrpc.do` path. It is deliberately narrow:
 
 - **Personal data stays personal.** The user's own timetable, own absences and
   `getUserData2017` keep running on their own account.
-- **Only editors are lifted.** A non-editor's `getPeriodData2017` is forwarded
-  with their own account.
+- **Class-scoped access is checked per request.** Callers without it use
+  their own upstream account.
 - **A write still needs the permission upstream grants it.** Routing through the
   teacher lets a legitimate editor's write succeed; it grants nothing extra.
 
@@ -152,14 +101,10 @@ data stays keyed by school name and becomes orphaned.
 
 ## Bootstrapping accounts
 
-Once per person, provision their WebUntis account into the DB so the proxy can
-authenticate as them (making them a pool owner / able to log in):
+A user can sign in through upstream without pre-seeding credentials. Use a
+normal enrolment flow if the proxy needs a replayable source for timetable
+fetches. Dashboard administrator access requires explicit provisioning through
+`UNTIS_ADMIN`, `-admin`, or `untisctl users admin --user USERNAME`.
 
-1. Add the account with `untisctl users add` (key or password).
-2. Optionally grant reconstruction perms with `untisctl perms grant …`.
-3. `untisctl users check` to confirm the stored logins actually work.
-
-The seed tool (`cmd/seed`) does the same from an INI-style `credentials.txt` and
-also fills in `person_id` / `class_id` by logging in live.
-
-See [`10-untisctl.md`](10-untisctl.md) for the full command set.
+See [10](10-untisctl.md) for operator commands. Review [compatibility diagnostics](13-basic-and-compatibility.md)
+to check credential presence and upstream timetable support without exposing secrets.

@@ -1,6 +1,6 @@
 # UntisPlus Proxy — extra API surface
 
-The [UntisPlus Proxy](../..) is a Go reverse-proxy that sits in front of a
+The [UntisPlus Proxy](https://github.com/UntisPlus/UntisPlus-Proxy) is a Go reverse-proxy that sits in front of a
 WebUntis school server and adds a set of capabilities WebUntis itself does not
 offer. This directory documents every endpoint, permission, and behaviour it
 adds **on top of** the raw WebUntis APIs described in the rest of this
@@ -17,9 +17,10 @@ WebUntis APIs it forwards are documented in [`../`](../README.md).
 
 | Capability | Why it exists | Doc |
 |---|---|---|
-| **Class pooling + reconstruction** | WebUntis is per-user; the pool makes every donated class readable by everyone, and teacher/room/subject timetables are *reconstructed* from it | [01](01-permissions.md) |
-| **Raw forwarding ("boosted")** | Serve an element's timetable by re-authenticating as a saved teacher account, instead of reconstructing | [01](01-permissions.md) |
-| **Editing ("editor")** | Unlock the absence / lesson write methods, run class-scoped calls as a teacher | [01](01-permissions.md) |
+| **Class pooling + reconstruction** | WebUntis is per-user; the pool makes donated classes available to users with pooled timetable access, and teacher/room/subject timetables are *reconstructed* from it | [01](01-permissions.md) |
+| **Saved teacher timetable reads** | Serve an element's timetable by re-authenticating as a saved teacher account, instead of reconstructing | [01](01-permissions.md) |
+| **Upstream editing** | Unlock the absence / lesson write methods, run class-scoped calls as a teacher | [01](01-permissions.md) |
+| **Cancellation analytics** | Read-only JSON reports and exports for permitted timetable ranges | [11](11-analytics-and-access.md) |
 | **Technik / student events** | Admin-authored dated entries on one student's timetable, with a local absence register | [07](07-student-events.md) |
 | **Change detection** | Poll each pooled class, diff against the last snapshot, bump a version | [03](03-change-detection.md) |
 | **SSE change stream** | Live push of detected changes to a client | [03](03-change-detection.md) |
@@ -36,7 +37,7 @@ WebUntis APIs it forwards are documented in [`../`](../README.md).
 
 | Page | Contents |
 |---|---|
-| [01 — How it works & permissions](01-permissions.md) | Pooling, reconstruction, boosted, editor, techniker, multi-school |
+| [01 — How it works & permissions](01-permissions.md) | Capability groups, effective permissions and school isolation |
 | [02 — HTTP endpoint reference](02-endpoints.md) | Every route, method, auth and response |
 | [03 — Change detection](03-change-detection.md) | `/api/timetable/changes`, `/api/timetable/stream`, the digest |
 | [04 — Notifications](04-notifications.md) | Webhooks, ntfy, the durable outbox, signatures |
@@ -46,6 +47,9 @@ WebUntis APIs it forwards are documented in [`../`](../README.md).
 | [08 — Admin API](08-admin-api.md) | `/admin` dashboard and its JSON endpoints |
 | [09 — Configuration](09-configuration.md) | Flags / env vars, metrics, public surface |
 | [10 — `untisctl`](10-untisctl.md) | Operator CLI reference |
+| [11 — Analytics and controls](11-analytics-and-access.md) | Cancellation reports, separate Technik grants and login rules |
+| [12 — CSV imports](12-csv-import.md) | Mapping and preview for events and local attendance |
+| [13 — Basic and compatibility](13-basic-and-compatibility.md) | Upstream-only Basic, inheritance exceptions and diagnostics |
 
 ## Login: the proxy's own auth
 
@@ -63,7 +67,10 @@ convenience:
 > real server accepts the login. Six-digit codes keep working unchanged.
 
 The client binds a session to a school with `?school=<name>`; the proxy returns
-a `JSESSIONID` cookie that the following `jsonrpc.do` / REST calls carry.
+a `JSESSIONID` cookie that subsequent proxy requests carry. A one-time code
+establishes a session but supplies no replay key. First dashboard admin status
+is provisioned explicitly. A username is bound to one school in the current
+store, and login at another school with the same username is rejected.
 
 ## Notes on scope
 

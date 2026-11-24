@@ -40,11 +40,16 @@ Content-Type: application/json
 |---|---|---|
 | `GET /status` | public | `{"status":"ok","mode":"dev","version":"<tag or dev>","uptime_sec":N}` |
 | `GET /healthz` | public | `200`/`503` `{"status":"ok|degraded","uptime_sec":N,"schools":N,"degraded":N}` |
-| `GET /me` | session | `{"username","level","permissions":{...}}` |
+| `GET /me` | session | Account role, groups, effective capabilities and legacy flags |
+| `PATCH /me` (also POST/PUT) | session | Update opt-in preferences for allowed, toggleable capabilities |
 
 `/healthz` is `200` while every school with a non-empty pool is being polled,
 `503` when a school has gone stale. It reports no per-school detail by design
 (see [09](09-configuration.md#health-status--metrics)).
+
+To change a preference, send `{"preferences":{"pool.timetable.share":false}}`.
+Opting out takes effect within the existing grants. Opting in cannot override a
+server disable or an administrator deny. Browser writes must be same-origin.
 
 ## Change detection
 
@@ -166,20 +171,22 @@ max 365). Access: classes need pool membership (or `boosted`/staff);
  "created":1750000000,"lastUsed":1750000000,"createdBy":"jdoe"}
 ```
 
-`GET /api/calendar/options` mirrors the `masterData` visibility the login
-rewrite sets (pooled classes + personal for everyone, `recon` enumerations,
-`boosted`/staff everything, `techniker` the Technik class). See
+`GET /api/calendar/options` lists calendar targets available to the caller.
+The applicable timetable and calendar capabilities determine which targets can
+be minted. See
 [05](05-calendar.md) for the full shape, the feed contents and `/week`.
 
-## Student events (Technik) — admin API
+## Student events and attendance
 
-Admin session required. See [07](07-student-events.md).
+A session and the corresponding Technik operation grant are required.
+The dashboard administrator exception still respects server gates. See
+[07](07-student-events.md) and [the mapped CSV contract](12-csv-import.md).
 
 | Route | Methods | Purpose |
 |---|---|---|
 | `GET /api/admin/events?username=<name>[&school=<s>]` | GET | one student's events, sorted by date then start |
 | `/api/admin/events` | POST | create |
-| `/api/admin/events/import?school=<s>` | POST | bulk import (CSV/JSON) |
+| `/api/admin/events/import?school=<s>` | POST | legacy Technik CSV/JSON or mapped CSV with column inspection, preview and apply |
 | `GET /api/admin/events/absences?school=<s>` | GET | event-absence register |
 | `PATCH /api/admin/events/absences` | PATCH | correct a register row |
 | `GET /api/admin/events/absences/log?school=<s>` | GET | register changelog |
@@ -190,6 +197,16 @@ POST {"username":"dee","date":"2026-10-01","startTime":"14:00","endTime":"15:00"
       "title":"Technik","subject":"Mathe","room":"R12","teacher":"Mr Smith",
       "description":"Arbeitsblatt mitbringen"}
 ```
+
+The same handlers are exposed at `/api/technik/events`,
+`/api/technik/events/{id}`, `/api/technik/import`, `/api/technik/attendance`,
+and `/api/technik/attendance/log`.
+
+## Cancellation reports
+
+`POST /api/analytics/teacher-cancellations?school=NAME` reads approved upstream
+timetables. It returns read-only JSON cancellation statistics or an export within
+the same scope. See [request parameters and access](11-analytics-and-access.md).
 
 ## Absence notes vs. event-absence register
 
@@ -205,6 +222,9 @@ methods (see [07](07-student-events.md#the-event-absence-register)).
 |---|---|---|
 | `GET /admin` | admin | embedded single-page dashboard |
 | `GET /admin/login` | public | login form |
+| `GET /setup` | public | initial setup status |
+| `POST /admin/logout` | session | revoke the current proxy session |
+| `GET /admin/updates` | admin | cached GitHub release check |
 | `/admin/*` | admin | JSON API used by the dashboard |
 
 See [08](08-admin-api.md) for the full `/admin/*` API.

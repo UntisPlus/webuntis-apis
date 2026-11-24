@@ -11,6 +11,12 @@
 > 📄 **Machine-readable schemas:** complete OpenAPI specs for all 15 Platform
 > APIs are in [`specs/untis-platform/`](../specs/untis-platform/README.md).
 
+The [teacher absence management spec](../specs/untis-platform/openapi-extern-teacher-absences-api_v1.yaml)
+and [absence reasons spec](../specs/untis-platform/openapi-extern-teacher-absence-reason-v1.yaml)
+describe upstream records. UntisPlus Proxy's [cancellation reports](proxy/11-analytics-and-access.md)
+use timetable observations, and its [event absence register](proxy/07-student-events.md)
+tracks attendance at local events.
+
 ## Base URLs
 
 | Environment | URL |

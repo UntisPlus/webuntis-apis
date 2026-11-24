@@ -26,8 +26,9 @@ sees as `SEQUENCE`.
 
 ## Admin API
 
-Admin session only (the gate runs before the method is dispatched, so a
-non-admin's response is identical whatever they asked for).
+Require a session and the operation's Technik capability. Dashboard
+administrators can manage these endpoints within server gates. The same
+operations are available via the `/api/technik/` endpoints.
 
 | Route | Method | Purpose |
 |---|---|---|
@@ -173,7 +174,7 @@ POST /api/admin/events/import?school=<s>
 ```
 
 The body is the export itself: **JSON** when it starts with `{`, otherwise the
-semicolon **CSV**. Admin only.
+semicolon **CSV**. Requires `events.technik.import` or dashboard administrator access within server gates.
 
 - **JSON**: `{"techniker":[{"name","code"}],"veranstaltungen":[{datum,beginn,
   ende,titel,veranstalter,ort,material,notizen,einsatz:[…]}]}`. With a roster, a
@@ -215,3 +216,8 @@ because those have no single username to read a student's private events from.
 
 The `/week/{token}` page renders custom events inline (own title and
 description, marked as custom).
+
+## Mapped CSV
+
+For user-defined columns, fixed values, previews and event absence imports, see
+[the mapped CSV contract](12-csv-import.md).
