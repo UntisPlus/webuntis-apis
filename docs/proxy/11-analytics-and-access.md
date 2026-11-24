@@ -109,8 +109,11 @@ See the [OpenAPI contract](../../specs/untisplus-proxy/analytics-and-csv.yaml).
   report of up to 31 days. It is used only for that upstream read and is
   never saved or returned. Requests without a code use the saved source.
 
-Dates are inclusive; the current-day/future cutoff uses UTC. A request covers at most 366 days and 32 source windows;
-upstream requests are split into at most 31-day chunks. Personal history has no
+Dates are inclusive. The current-day and future cutoff uses UTC. A request
+covers at most 366 days. Personal reports use up to 53 upstream windows of
+at most seven days each. Teacher and class-history reports use up to 32
+upstream windows of at most 31 days each. A one-day personal query may read
+nearby dates and includes only the requested day in the report. Personal history has no
 proxy retention cutoff back to practical historical dates (1900 or later), but
 requires the extra history grant for older dates. Request multiple ranges to
 cover multiple years. Upstream may not retain or expose old data. Future days
