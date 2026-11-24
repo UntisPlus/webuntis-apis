@@ -154,7 +154,9 @@ components:
         studentId: {type: integer, format: int64, minimum: 1}
         classId: {type: integer, format: int64, minimum: 1}
         dataSource:
-          $ref: '#/components/schemas/AnalyticsDataSource'
+          description: Optional selection from the target's dataSources list. When omitted, the proxy selects a permitted source. Teacher and room reports prefer eligible direct upstream access, then permitted reconstruction. An explicit selection must be available.
+          allOf:
+            - $ref: '#/components/schemas/AnalyticsDataSource'
         room:
           type: string
           maxLength: 120
